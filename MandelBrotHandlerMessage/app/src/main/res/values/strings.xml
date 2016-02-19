@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MandelBrotHandlerMessage</string>
+    <string name="submitButton">Submit</string>
+    <string name="input">input</string>
+</resources>
