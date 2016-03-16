@@ -1,2 +1,2 @@
-# Threadings-in-Mandelbrot
-This project contains the famous Mandelbrot benchmark implemented with different threading styles.
+# MultiThreading-Styles
+This project contains different benchmarks and programs implemented with different threading styles.
