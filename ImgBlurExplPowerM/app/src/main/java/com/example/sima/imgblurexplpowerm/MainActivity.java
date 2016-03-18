@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     int numThreads;
     Worker[] pool;
     long startTime;
+    long duration;
 
     Bitmap orgBitmap;
     Bitmap bitmap;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout layout;
     Bitmap[] bmpArray; // = new Bitmap[numThreads];
     Object lock1 = new Object();
+    TextView view;
 
     public Bitmap createPlaceholder() {
 
@@ -43,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < bmpArray.length; i++) {
             bmpArray[i] = Bitmap.createBitmap(bitmap, i*pieceWidth, 0,pieceWidth, h);
         }
-//        System.out.println("bmpArray: "+Arrays.toString(bmpArray));
     }
 
     public void copyPartToPlaceholder(Bitmap smallBitmap, int index) {
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         layout = (LinearLayout) findViewById(R.id.layout);
+        view = (TextView) findViewById(R.id.textView);
 
         NetworkH w1= new NetworkH();
         w1.start();
@@ -88,11 +91,8 @@ public class MainActivity extends AppCompatActivity {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-            for(int i=0; i<=6; i++) {
+            for(int i=1; i<=7; i++) {
                 try {
-//                startConnection = startMonsoon.openConnection();
-//                startConnection.connect();
-
                     HttpURLConnection con = (HttpURLConnection) startMonsoon.openConnection();
                     con.setRequestMethod("GET");
                     con.setRequestProperty("User-Agent", USER_AGENT);
@@ -101,12 +101,9 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("Response Code : " + responseCode);
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(con.getInputStream()));
-                    // String inputLine;
                     StringBuffer response = new StringBuffer();
                     System.out.println(response.toString());
 
-//        		while ((inputLine = in.readLine()) != null) {
-//                    response.append(in.readLine());
                     startTime = System.currentTimeMillis();
                     System.out.println("Started...");
                     numThreads =(int) Math.pow(2, i);
@@ -117,21 +114,19 @@ public class MainActivity extends AppCompatActivity {
 
                     in.close();
 
-                    //print result
-
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                long endTime = System.currentTimeMillis();
-                System.out.println("Duration: "+ (endTime-startTime));
+                duration = System.currentTimeMillis() -startTime;
+                System.out.println("Duration: "+ duration);
+                view.setText(String.valueOf(duration));
                 try {
                     StringBuilder sb = new StringBuilder("http://129.123.7.199:8000/save?file=ImageBlurExplicit");
 
-
-                    sb.append(String.format("%d%s\n", i, ".pt5"));
+                    sb.append(String.format("%d%s\n", i,"-1"));
                     System.out.println(sb);
                     //String urlString = "http://129.123.7.199:8000/save?file=ImageBlurExplicit.pt5";
                     System.out.println("trying to end the connection");
@@ -140,8 +135,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 try {
-//                endConnection = endMonsoon.openConnection();
-//                endConnection.connect();
                     HttpURLConnection endCon = (HttpURLConnection) endMonsoon.openConnection();
                     endCon.setRequestMethod("GET");
                     endCon.setRequestProperty("User-Agent", USER_AGENT);
@@ -161,13 +154,14 @@ public class MainActivity extends AppCompatActivity {
         public void run(){
             System.out.println("No of threads: " + numThreads);
             String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
+//            String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/downloadfile.jpg";
             orgBitmap = BitmapFactory.decodeFile(bitmapPath);
             bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
 
             w = bitmap.getWidth();
             h = bitmap.getHeight();
 
-            for(int j=1; j <= 15; j++){
+            for(int j=1; j <= 35; j++){
                 splitImage();
                 pool = new Worker[numThreads];
 
@@ -190,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
                     copyPartToPlaceholder(bmpArray[i], i);
                 }
             }
+//            view.setText(String.valueOf(duration));
         }
     }
     public class Worker extends  Thread {
