@@ -55,6 +55,7 @@ class AsyncTaskBlur extends AsyncTask<Void, Void, Void> {
         for (int j = 0; j < mainActivity.numThreads; j++) {
             copyPartToPlaceholder(mainActivity.bmpArray[j], j);
         }
+        mainActivity.layout.setBackground(new BitmapDrawable(mainActivity.placeholder));
 
     }
 

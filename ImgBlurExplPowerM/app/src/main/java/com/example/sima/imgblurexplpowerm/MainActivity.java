@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         AsyncTaskBlur task = new AsyncTaskBlur(this);
         task.execute();
+
     }
 
     private void startExecutor(){
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        layout.setBackground(new BitmapDrawable(placeholder));
     }
 
     private void startHandlerR(){
@@ -119,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        layout.setBackground(new BitmapDrawable(placeholder));
     }
 
     public enum Style{
@@ -138,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
         PowerMonitor.startMonitoring();
 
-        Style style = Style.AsyncTask;
+        Style style = Style.HandlerR;
 
         switch (style){
             case Explict:
