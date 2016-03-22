@@ -11,16 +11,23 @@ import java.net.URL;
 /**
  * Created by daehyeok on 2016. 3. 21..
  */
-public  class PowerMonitor {
-
+public class PowerMonitor {
+    static boolean usePowerMonitor = false;
     static String baseUrl = "http://10.8.0.1:8000";
-    PowerMonitor(){};
 
-    public static void setBaseUrl(String url){
+    PowerMonitor() {
+    }
+
+    ;
+
+    public static void setBaseUrl(String url) {
         baseUrl = url;
     }
 
-    public static boolean  startMonitoring(){
+    public static boolean startMonitoring() {
+        Log.i("Power Monitoring", "Power Monitor start");
+        if (!usePowerMonitor) return true;
+
         URL url;
         try {
             url = new URL(baseUrl + "/start");
@@ -28,8 +35,7 @@ public  class PowerMonitor {
             Log.d("Power Monitoring", "Sending Start request to URL : " + url);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             Log.d("Power Monitoring", "Response Code : " + con.getResponseCode());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -37,7 +43,10 @@ public  class PowerMonitor {
         return true;
     }
 
-    public static boolean  saveMonitoring(String filename){
+    public static boolean saveMonitoring(String filename) {
+        Log.i("Power Monitoring", "Power Monitor stop : request " + filename);
+        if (!usePowerMonitor) return true;
+
         URL url;
         try {
             url = new URL(baseUrl + "/save?file=" + filename);
@@ -46,8 +55,7 @@ public  class PowerMonitor {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
             Log.d("Power Monitoring", "Response Code : " + con.getResponseCode());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
