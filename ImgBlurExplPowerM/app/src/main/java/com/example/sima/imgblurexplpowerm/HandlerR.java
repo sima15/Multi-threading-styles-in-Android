@@ -1,5 +1,6 @@
 package com.example.sima.imgblurexplpowerm;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 /**
@@ -16,7 +17,7 @@ public class HandlerR implements Runnable {
 
     @Override
     public void run() {
-
+        mainActivity.bmpArray = new Bitmap[mainActivity.numThreads];
         mainActivity.splitImage();
         pool = new Worker[mainActivity.numThreads];
 
