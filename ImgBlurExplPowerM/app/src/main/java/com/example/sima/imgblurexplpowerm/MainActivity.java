@@ -11,6 +11,9 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+
 public class MainActivity extends AppCompatActivity {
 
     int w, h;
@@ -60,14 +63,53 @@ public class MainActivity extends AppCompatActivity {
         layout = (LinearLayout) findViewById(R.id.layout);
         view = (TextView) findViewById(R.id.textView);
 
-        Explicit w1= new Explicit(this);
-        w1.start();
-        try {
-            w1.join();
-        }catch(Exception e){
-            e.printStackTrace();
+        orgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bjjwallpaper);
+        w = orgBitmap.getWidth();
+        h = orgBitmap.getHeight();
+
+        PowerMonitor.startMonitoring();
+
+        //Explict
+        if(false) {
+            bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
+            Explicit w1 = new Explicit(this);
+            w1.start();
+            try {
+                w1.join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            layout.setBackground(new BitmapDrawable(placeholder));
         }
-        layout.setBackground(new BitmapDrawable(placeholder));
+        //Fork Join
+        if(true) {
+            Bitmap dest;
+            bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
+            dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
+
+
+            int[] src = new int[w * h];
+            int[] dst = new int[w * h];
+
+
+            bitmap.getPixels(src, 0, w, 0, 0, w, h);
+            ForkBlur fb = new ForkBlur(src, 0, src.length, dst);
+            ForkJoinPool pool = new ForkJoinPool(numThreads);
+            pool.invoke(fb);
+            pool.shutdown();
+            try {
+                pool.awaitTermination(500, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            dest.setPixels(dst, 0, w, 0, 0, w, h);
+
+            layout.setBackground(new BitmapDrawable(dest));
+        }
+
+
+        PowerMonitor.saveMonitoring(String.format("ImageBlur%d.csv", numThreads));
+
     }
 
 }

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -44,26 +45,7 @@ public class ImageBlur extends AppCompatActivity {
     URL endMonsoon;
 
     Handler handler = new Handler();
-//    Handler handler = new Handler(){
-//        @Override
-//        public void handleMessage(Message msg){
-//            switch (msg.what){
-//                case SET_PROGRESS_BAR_VISIBILITY: {
-//                    mProgressBar.setVisibility((Integer) msg.obj);
-//                    break;
-//                }
-//                case PROGRESS_UPDATE: {
-//                    mProgressBar.setProgress((Integer) msg.obj);
-//                    break;
-//                }
-//                case SET_RESULT: {
-//                    textHandler.setText((String) msg.obj);
-//                    break;
-//                }
-//            }
-//        }
-//
-//    };
+
 
     public Bitmap createPlaceholder() {
             Bitmap placeHldBmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -106,8 +88,8 @@ public class ImageBlur extends AppCompatActivity {
                 Toast.makeText(context, "Internet is connected", Toast.LENGTH_SHORT).show();
             }
         }
-//        NetworkHandler connectionThread = new NetworkHandler();
-        Thread connectionThread = new Thread(new MyHandler(handler));
+        NetworkHandler connectionThread = new NetworkHandler();
+        //Thread connectionThread = new Thread(new MyHandler(handler));
         connectionThread.start();
         try {
             connectionThread.join();
@@ -123,8 +105,12 @@ public class ImageBlur extends AppCompatActivity {
 
         public void run (){
             try {
-                URL startMonsoon = new URL("http://129.123.7.199:8000/start");
+                Log.d("Debug Info", "Send Power Monitoring Start Request");
+
+                //URL startMonsoon = new URL("http://129.123.7.199:8000/start");
+                URL startMonsoon = new URL("http://google.com");
                 myUrlConnection = startMonsoon.openConnection();
+
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -147,11 +133,14 @@ public class ImageBlur extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 try {
+                    Log.d("Debug Info", "Send Power Monitoring Save Request");
+                    /*
                     String urlStr = "sima1.pt5";
                    // String urlStr = String.format("http://129.123.7.199:8000/save?file=%s",numThreads);
                     endMonsoon = new URL(urlStr);
                     endConnection = endMonsoon.openConnection();
                     endConnection.connect();
+                    */
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -167,8 +156,10 @@ public class ImageBlur extends AppCompatActivity {
         @Override
         public void run() {
 
-            String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+ "/redrose-2.jpg";
-            bitmap = BitmapFactory.decodeFile(bitmapPath);
+            //String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+ "/bjjwallpaper.jpg";
+            //bitmap = BitmapFactory.decodeFile(bitmapPath);
+
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bjjwallpaper);
 
             w = bitmap.getWidth();
             h = bitmap.getHeight();

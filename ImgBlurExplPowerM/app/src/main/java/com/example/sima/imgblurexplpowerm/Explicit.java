@@ -23,8 +23,6 @@ class Explicit extends Thread {
 
         try {
             mainActivity.bmpArray = new Bitmap[mainActivity.numThreads];
-
-            PowerMonitor.startMonitoring();
             mainActivity.startTime = System.currentTimeMillis();
 
             JobHandler hndlr = new JobHandler(mainActivity);
@@ -36,10 +34,7 @@ class Explicit extends Thread {
         }
 
         mainActivity.duration = System.currentTimeMillis() - mainActivity.startTime;
-        Log.i("INFO", "Duration: " + mainActivity.duration);
         mainActivity.view.setText(String.valueOf(mainActivity.duration));
-
-        PowerMonitor.saveMonitoring(String.format("ImageBlurExplicit%d.csv", mainActivity.numThreads));
 
         Log.i("INFO", "Test finished");
     }

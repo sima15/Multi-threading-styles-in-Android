@@ -18,13 +18,6 @@ public class JobHandler extends Thread {
 
     public void run() {
         Log.i("INFO", "No of threads: " + mainActivity.numThreads);
-        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
-
-        mainActivity.orgBitmap = BitmapFactory.decodeResource(mainActivity.getResources(), R.drawable.bjjwallpaper);
-        mainActivity.bitmap = mainActivity.orgBitmap.copy(mainActivity.orgBitmap.getConfig(), true);
-
-        mainActivity.w = mainActivity.bitmap.getWidth();
-        mainActivity.h = mainActivity.bitmap.getHeight();
 
         for (int j = 1; j <= 35; j++) {
             mainActivity.splitImage();
