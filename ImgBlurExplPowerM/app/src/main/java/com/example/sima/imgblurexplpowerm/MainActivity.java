@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -78,84 +79,47 @@ public class MainActivity extends AppCompatActivity {
 
 
     class NetworkH extends  Thread{
-        private final String USER_AGENT = "Mozilla/5.0";
-        URL endMonsoon;
-
         public void run(){
-            System.out.println("Hello from inside the thread");
-
-            System.out.println("Starting the connection");
+            Log.i("INFO", "Hello from inside the thread");
+            Log.i("INFO", "Starting the connection");
             URL startMonsoon = null;
-            try {
-                startMonsoon = new URL("http://129.123.7.199:8000/start");
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+
             for(int i=1; i<=7; i++) {
                 try {
-                    HttpURLConnection con = (HttpURLConnection) startMonsoon.openConnection();
-                    con.setRequestMethod("GET");
-                    con.setRequestProperty("User-Agent", USER_AGENT);
-                    int responseCode = con.getResponseCode();
-                    System.out.println("\nSending 'GET' request to URL : " + startMonsoon);
-                    System.out.println("Response Code : " + responseCode);
-                    BufferedReader in = new BufferedReader(
-                            new InputStreamReader(con.getInputStream()));
-                    StringBuffer response = new StringBuffer();
-                    System.out.println(response.toString());
+                    sleep(10000);
+                    PowerMonitor.startMonitoring();
 
                     startTime = System.currentTimeMillis();
-                    System.out.println("Started...");
+                    Log.i("INFO", "Started...");
                     numThreads =(int) Math.pow(2, i);
                     bmpArray = new Bitmap[numThreads];
                     JobHandler hndlr = new JobHandler();
                     hndlr.start();
                     hndlr.join();
 
-                    in.close();
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
+
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
                 duration = System.currentTimeMillis() -startTime;
-                System.out.println("Duration: "+ duration);
+                Log.i("INFO", "Duration: "+ duration);
                 view.setText(String.valueOf(duration));
-                try {
-                    StringBuilder sb = new StringBuilder("http://129.123.7.199:8000/save?file=ImageBlurExplicit");
 
-                    sb.append(String.format("%d%s\n", i,"-1"));
-                    System.out.println(sb);
-                    //String urlString = "http://129.123.7.199:8000/save?file=ImageBlurExplicit.pt5";
-                    System.out.println("trying to end the connection");
-                    endMonsoon = new URL(String.valueOf(sb));
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    HttpURLConnection endCon = (HttpURLConnection) endMonsoon.openConnection();
-                    endCon.setRequestMethod("GET");
-                    endCon.setRequestProperty("User-Agent", USER_AGENT);
-                    int responseCode2 = endCon.getResponseCode();
-                    System.out.println("\nSending 'GET' request to URL : " + endMonsoon);
-                    System.out.println("Response Code : " + responseCode2);
+                PowerMonitor.saveMonitoring(String.format("ImageBlurExplicit%d.csv", i));
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
-            System.out.println("Program finished");
+            Log.i("INFO", "Program finished");
         }
     }
 
     public  class JobHandler extends  Thread{
         public void run(){
-            System.out.println("No of threads: " + numThreads);
+            Log.i("INFO", "No of threads: " + numThreads);
             String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
-//            String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/downloadfile.jpg";
-            orgBitmap = BitmapFactory.decodeFile(bitmapPath);
+
+            orgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bjjwallpaper);
             bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
 
             w = bitmap.getWidth();
