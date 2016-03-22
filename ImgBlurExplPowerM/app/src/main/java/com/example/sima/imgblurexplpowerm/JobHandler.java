@@ -11,6 +11,7 @@ import android.util.Log;
  */
 public class JobHandler extends Thread {
     private MainActivity mainActivity;
+    Worker[] pool;
 
     public JobHandler(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -21,17 +22,17 @@ public class JobHandler extends Thread {
 
         for (int j = 1; j <= 35; j++) {
             mainActivity.splitImage();
-            mainActivity.pool = new Worker[mainActivity.numThreads];
+            pool = new Worker[mainActivity.numThreads];
 
             Worker.mainActivity = (mainActivity);
 
             for (int i = 0; i < mainActivity.numThreads; i++) {
-                mainActivity.pool[i] = new Worker(mainActivity.pieceWidth, mainActivity.h, i, mainActivity.bmpArray[i]);
-                mainActivity.pool[i].start();
+                pool[i] = new Worker(mainActivity, mainActivity.pieceWidth, mainActivity.h, i, mainActivity.bmpArray[i]);
+                pool[i].start();
             }
 
             synchronized (mainActivity.lock1) {
-                while (!mainActivity.checkDone()) {
+                while (!checkDone()) {
                     try {
                         mainActivity.lock1.wait();
                     } catch (InterruptedException e) {
@@ -46,6 +47,13 @@ public class JobHandler extends Thread {
             }
         }
 //            view.setText(String.valueOf(duration));
+    }
+
+    boolean checkDone() {
+        for (Worker a : pool) {
+            if (!a.done) return false;
+        }
+        return true;
     }
 }
 

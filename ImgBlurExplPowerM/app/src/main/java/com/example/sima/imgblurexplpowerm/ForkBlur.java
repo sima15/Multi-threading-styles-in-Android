@@ -49,7 +49,7 @@ public class ForkBlur extends RecursiveAction {
         }
     }
 
-    protected  int sThreshold = 100000;
+    protected int sThreshold = 100000;
 
     @Override
     protected void compute() {

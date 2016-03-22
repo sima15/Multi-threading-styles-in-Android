@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 /**
  * Created by daehyeok on 2016. 3. 22..
  */
-public class Worker extends  Thread {
+public class Worker extends Thread {
     //static public Bitmap[] bmpArray;
     static public MainActivity mainActivity;
 
@@ -16,7 +16,8 @@ public class Worker extends  Thread {
     int index;
     Bitmap bitmap = null;//Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 
-    Worker( int w, int h, int index, Bitmap orgBmp) {
+    Worker(MainActivity mainActivity, int w, int h, int index, Bitmap orgBmp) {
+        this.mainActivity = mainActivity;
         this.w = w;
         this.h = h;
         this.index = index;
@@ -216,7 +217,7 @@ public class Worker extends  Thread {
         mainActivity.bmpArray[index] = bitmap;
         done = true;
 
-        synchronized (mainActivity.lock1){
+        synchronized (mainActivity.lock1) {
             mainActivity.lock1.notify();
         }
     }
