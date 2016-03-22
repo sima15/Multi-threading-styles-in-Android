@@ -12,7 +12,7 @@ import java.net.URL;
  * Created by daehyeok on 2016. 3. 21..
  */
 public  class PowerMonitor {
-
+    static boolean usePowerMonitor = false;
     static String baseUrl = "http://10.8.0.1:8000";
     PowerMonitor(){};
 
@@ -21,6 +21,9 @@ public  class PowerMonitor {
     }
 
     public static boolean  startMonitoring(){
+        Log.i("Power Monitoring", "Power Monitor start");
+        if(!usePowerMonitor) return true;
+
         URL url;
         try {
             url = new URL(baseUrl + "/start");
@@ -38,6 +41,9 @@ public  class PowerMonitor {
     }
 
     public static boolean  saveMonitoring(String filename){
+        Log.i("Power Monitoring", "Power Monitor stop : request " + filename);
+        if(!usePowerMonitor) return true;
+
         URL url;
         try {
             url = new URL(baseUrl + "/save?file=" + filename);
