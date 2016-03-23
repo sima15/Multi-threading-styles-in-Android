@@ -10,28 +10,32 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 public class ImageBlur extends AppCompatActivity {
 
 //    final static int SET_PROGRESS_BAR_VISIBILITY = 0;
 //    final static int PROGRESS_UPDATE = 1;
-//    final static int SET_RESULT = 2;
+    final static int SET_RESULT = 2;
 
     int w, h;
     int numThreads= 4;
-    int logThreads ;
     Worker[] pool;
     long startTime;
     int pieceWidth;
+    TextView view;
 
-//    Bitmap orgBitmap;
     Bitmap bitmap;
     Bitmap placeholder;
     Bitmap[] bmpArray= new Bitmap[numThreads];
@@ -39,15 +43,13 @@ public class ImageBlur extends AppCompatActivity {
     Canvas canvas;
     LinearLayout layout;
 
-    URLConnection myUrlConnection;
-    URLConnection endConnection;
+
     URL endMonsoon;
 
-    Handler handler = new Handler();
-//    Handler handler = new Handler(){
-//        @Override
-//        public void handleMessage(Message msg){
-//            switch (msg.what){
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what){
 //                case SET_PROGRESS_BAR_VISIBILITY: {
 //                    mProgressBar.setVisibility((Integer) msg.obj);
 //                    break;
@@ -56,14 +58,14 @@ public class ImageBlur extends AppCompatActivity {
 //                    mProgressBar.setProgress((Integer) msg.obj);
 //                    break;
 //                }
-//                case SET_RESULT: {
-//                    textHandler.setText((String) msg.obj);
-//                    break;
-//                }
-//            }
-//        }
-//
-//    };
+                case SET_RESULT: {
+                    view.setText((String) msg.obj);
+                    break;
+                }
+            }
+        }
+
+    };
 
     public Bitmap createPlaceholder() {
             Bitmap placeHldBmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -96,6 +98,7 @@ public class ImageBlur extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         System.out.println("Start time: "+ startTime);
         layout = (LinearLayout)findViewById(R.id.layout);
+        view = (TextView) findViewById(R.id.textView);
 
         Context context = getApplicationContext();
         ConnectivityManager check = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -120,54 +123,90 @@ public class ImageBlur extends AppCompatActivity {
 
 
     class NetworkHandler extends Thread {
-
+        private final String USER_AGENT = "Mozilla/5.0";
         public void run (){
+            System.out.println("Hello from inside the thread");
+
+            System.out.println("Starting the connection");
+            URL startMonsoon = null;
             try {
-                URL startMonsoon = new URL("http://129.123.7.199:8000/start");
-                myUrlConnection = startMonsoon.openConnection();
-            }
-            catch(Exception e) {
+                startMonsoon = new URL("http://129.123.7.199:8000/start");
+            } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-
-
-            for( logThreads=0; logThreads<6; logThreads++)
-            {
-                numThreads = (int) Math.pow(2,  logThreads);
+            for(int i=0; i<=6; i++) {
                 try {
-                    myUrlConnection.connect();
-                    Thread t1 = new Thread(new MyHandler(handler));
-                    t1.start();
-                    try {
-                        t1.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+
+                    HttpURLConnection con = (HttpURLConnection) startMonsoon.openConnection();
+                    con.setRequestMethod("GET");
+                    con.setRequestProperty("User-Agent", USER_AGENT);
+                    int responseCode = con.getResponseCode();
+                    System.out.println("\nSending 'GET' request to URL : " + startMonsoon);
+                    System.out.println("Response Code : " + responseCode);
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(con.getInputStream()));
+                    // String inputLine;
+                    StringBuffer response = new StringBuffer();
+                    System.out.println(response.toString());
+
+                    startTime = System.currentTimeMillis();
+                    System.out.println("Started...");
+                    numThreads =(int) Math.pow(2, i);
+                    bmpArray = new Bitmap[numThreads];
+                    //Handler hndlr = new JobHandler();
+                    Thread hndlr = new Thread(new MyHandler(handler));
+                    hndlr.start();
+                    hndlr.join();
+
+                    in.close();
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                long duration = System.currentTimeMillis()-startTime;
+                System.out.println("Duration: "+ duration);
+                try {
+                    StringBuilder sb = new StringBuilder("http://129.123.7.199:8000/save?file=ImageBlurExplicit");
+
+                    sb.append(String.format("%d%s\n", i, ".pt5"));
+                    System.out.println(sb);
+                    //String urlString = "http://129.123.7.199:8000/save?file=ImageBlurExplicit.pt5";
+                    System.out.println("trying to end the connection");
+                    endMonsoon = new URL(String.valueOf(sb));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    HttpURLConnection endCon = (HttpURLConnection) endMonsoon.openConnection();
+                    endCon.setRequestMethod("GET");
+                    endCon.setRequestProperty("User-Agent", USER_AGENT);
+                    int responseCode2 = endCon.getResponseCode();
+                    System.out.println("\nSending 'GET' request to URL : " + endMonsoon);
+                    System.out.println("Response Code : " + responseCode2);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                try {
-                    String urlStr = "sima1.pt5";
-                   // String urlStr = String.format("http://129.123.7.199:8000/save?file=%s",numThreads);
-                    endMonsoon = new URL(urlStr);
-                    endConnection = endMonsoon.openConnection();
-                    endConnection.connect();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
+            System.out.println("Program finished");
         }
     }
     public class MyHandler implements  Runnable {
+        long startTime = System.currentTimeMillis();
+        Message msg = null;
 
-        Handler handler = new Handler();
-        public MyHandler(Handler handler){
-            this.handler = handler;
+        public MyHandler(Handler han){
+            handler = han;
         }
         @Override
         public void run() {
 
             String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+ "/redrose-2.jpg";
+//            String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+ "/downloadfile.jpg";
             bitmap = BitmapFactory.decodeFile(bitmapPath);
 
             w = bitmap.getWidth();
@@ -199,6 +238,10 @@ public class ImageBlur extends AppCompatActivity {
                 }
             }
             layout.setBackground(new BitmapDrawable(placeholder));
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            msg = handler.obtainMessage(SET_RESULT, String.valueOf(duration));
+            handler.sendMessage(msg);
         }
     }
 
@@ -207,7 +250,7 @@ public class ImageBlur extends AppCompatActivity {
             int radius = 35;
             boolean done = false;
             int index;
-            Bitmap bitmap = null;//Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            Bitmap bitmap = null;
 
             Worker(int w, int h, int index, Bitmap orgBmp) {
                 this.w = w;
