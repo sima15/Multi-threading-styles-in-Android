@@ -18,7 +18,7 @@ import java.net.URL;
  */
 public class PowerMonitor {
     static boolean usePowerMonitor = true;
-    static String baseUrl = "http://10.8.0.1:8000";
+    static String baseUrl = "http://129.123.7.34:8000";
 
     PowerMonitor() {};
 
@@ -97,9 +97,6 @@ public class PowerMonitor {
         String TargetString = "";
 
         if (!usePowerMonitor) return TargetString;
-
-
-
 
         try {
             HttpURLConnection con = sendRequest(baseUrl + "/target");

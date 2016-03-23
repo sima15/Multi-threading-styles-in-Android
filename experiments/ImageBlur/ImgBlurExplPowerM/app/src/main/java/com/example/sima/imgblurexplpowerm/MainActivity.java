@@ -1,15 +1,20 @@
 package com.example.sima.imgblurexplpowerm;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     TextView view;
 
     public enum Style {
-        Explict, ForkJoin, AsyncTask, Executor, HandlerR
+        Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
     }
 
     Style style;
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         return placeholderObj;
     }
 
-    public void splitImage() {
+    public  void splitImage() {
         pieceWidth = w / numThreads;
         for (int i = 0; i < bmpArray.length; i++) {
             bmpArray[i] = Bitmap.createBitmap(bitmap, i * pieceWidth, 0, pieceWidth, h);
@@ -130,6 +135,19 @@ public class MainActivity extends AppCompatActivity {
         layout.setBackground(new BitmapDrawable(placeholder));
     }
 
+    private void startHandlerM() {
+        Handler handler = new Handler();
+        Thread connectionThread = new Thread(new HandlerM(this, handler));
+        connectionThread.start();
+        try {
+            connectionThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        layout.setBackground(new BitmapDrawable(placeholder));
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,6 +212,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case HandlerR:
                 startHandlerR();
+                break;
+            case HandlerM:
+                startHandlerM();
                 break;
         }
     }
