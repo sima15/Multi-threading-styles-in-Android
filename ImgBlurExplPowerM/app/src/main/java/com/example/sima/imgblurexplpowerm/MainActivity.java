@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
     Object lock1 = new Object();
     TextView view;
 
+    public enum Style {
+        Explict, ForkJoin, AsyncTask, Executor, HandlerR
+    }
+
+    Style style;
+
     public Bitmap createPlaceholder() {
 
         Bitmap placeholderObj = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -53,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void startExplict(){
+    private void startExplict() {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         Explicit w1 = new Explicit(this);
         w1.start();
@@ -65,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         layout.setBackground(new BitmapDrawable(placeholder));
     }
 
-    private void startForkJoin(){
+    private void startForkJoin() {
         Bitmap dest;
         bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
         dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
@@ -90,14 +96,14 @@ public class MainActivity extends AppCompatActivity {
         layout.setBackground(new BitmapDrawable(dest));
     }
 
-    private void startAsyncTask(){
+    private void startAsyncTask() {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         AsyncTaskBlur task = new AsyncTaskBlur(this);
         task.execute();
 
     }
 
-    private void startExecutor(){
+    private void startExecutor() {
         ExecutorService pool;
         pool = Executors.newFixedThreadPool(numThreads);
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
@@ -111,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         layout.setBackground(new BitmapDrawable(placeholder));
     }
 
-    private void startHandlerR(){
+    private void startHandlerR() {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         HandlerR handle = new HandlerR(this);
         Thread t = new Thread(handle);
@@ -124,9 +130,6 @@ public class MainActivity extends AppCompatActivity {
         layout.setBackground(new BitmapDrawable(placeholder));
     }
 
-    public enum Style{
-        Explict, ForkJoin, AsyncTask, Executor, HandlerR
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,25 +142,59 @@ public class MainActivity extends AppCompatActivity {
         w = orgBitmap.getWidth();
         h = orgBitmap.getHeight();
 
-        PowerMonitor.startMonitoring();
 
-        Style style = Style.HandlerR;
+        style = Style.HandlerR;
 
-        switch (style){
-            case Explict:
-                startExplict();break;
-            case ForkJoin:
-                startForkJoin();break;
-            case AsyncTask:
-                startAsyncTask();break;
-            case Executor:
-                startExecutor();break;
-            case HandlerR:
-                startHandlerR();break;
+        PowerMonitor powerMonitor = new PowerMonitor();
+        while (true) {
+            String targetString = powerMonitor.getTarget();
+
+            if (targetString == "Done") break;
+
+            String[] target = targetString.split(" ");
+
+            try{
+                style = Style.valueOf(target[0]);
+            }catch (Exception e){
+                Log.d("Parsing Error", targetString);
+                Log.d("Parsing Error", e.getMessage());
+                continue;
+            }
+            numThreads = Integer.parseInt(target[1]);
+
+            int repeatNum = 100;
+            Log.i("Thread Style Info", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
+            powerMonitor.startMonitoring();
+
+            for (int j = 0; j < repeatNum; j++) {
+                startTest();
+            }
+
+            powerMonitor.saveMonitoring(String.format("ImageBlur_%s_%d", style.name(), numThreads));
+            SystemClock.sleep(10000);
+
+
         }
-
-        PowerMonitor.saveMonitoring(String.format("ImageBlur%d.csv", numThreads));
-
     }
 
+
+    private void startTest() {
+        switch (style) {
+            case Explict:
+                startExplict();
+                break;
+            case ForkJoin:
+                startForkJoin();
+                break;
+            case AsyncTask:
+                startAsyncTask();
+                break;
+            case Executor:
+                startExecutor();
+                break;
+            case HandlerR:
+                startHandlerR();
+                break;
+        }
+    }
 }
