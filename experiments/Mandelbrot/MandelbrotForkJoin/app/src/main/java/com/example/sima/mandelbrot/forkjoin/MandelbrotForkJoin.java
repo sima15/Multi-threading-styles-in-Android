@@ -23,7 +23,7 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     static double[] Crb;
     static double[] Cib;
 
-    ForkJoinPool forkJoinPoolool;
+    ForkJoinPool forkJoinPool;
     int index = poolLength;
 
     @Override
@@ -53,14 +53,14 @@ public class MandelbrotForkJoin extends AppCompatActivity {
                 int poolLength = 32;
                 for (int loopCount = 0; loopCount < 800; loopCount++) {
                     MandelbrotTask task = new MandelbrotTask();
-                    forkJoinPoolool = new ForkJoinPool(poolLength);
-                    forkJoinPoolool.invoke(task);
+                    forkJoinPool = new ForkJoinPool(poolLength);
+                    forkJoinPool.invoke(task);
                 }
-                forkJoinPoolool.shutdown();
+                forkJoinPool.shutdown();
 
                 try {
-                    forkJoinPoolool.awaitTermination(1, TimeUnit.DAYS);
-                    if (forkJoinPoolool.isTerminated()) {
+                    forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
+                    if (forkJoinPool.isTerminated()) {
                         System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
                         for(int i=0;i<N;i++) System.out.println(out[i]);
                         long endTime = System.currentTimeMillis();
