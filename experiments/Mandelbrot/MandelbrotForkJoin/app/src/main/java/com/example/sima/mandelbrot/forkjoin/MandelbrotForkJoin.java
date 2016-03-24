@@ -23,21 +23,9 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     static double[] Crb;
     static double[] Cib;
 
-    ForkJoinPool forkJoinPoolool;
-    Thread[] pool;
-    int index =0;
-    //    void CreatePool(){
-//        if (index == poolLength) return;
-//        pool[index] = new Thread() {
-//            public void run() {
-//                int y = 1;
-//                for (int xb = 0; xb < out[y].length; xb++) {
-//                    out[y][xb] = (byte) getByte(xb * 8, y);
-//                }
-//            }
-//        };
-//        index++;
-//    }
+    ForkJoinPool forkJoinPool;
+    int index = poolLength;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,15 +52,17 @@ public class MandelbrotForkJoin extends AppCompatActivity {
 
                 int poolLength = 32;
                 for (int loopCount = 0; loopCount < 800; loopCount++) {
-                    MandelbrotTask task = new MandelbrotTask(0);
-                    forkJoinPoolool = new ForkJoinPool(poolLength);
-                    forkJoinPoolool.invoke(task);
+                    MandelbrotTask task = new MandelbrotTask();
+                    forkJoinPool = new ForkJoinPool(poolLength);
+                    forkJoinPool.invoke(task);
                 }
-                forkJoinPoolool.shutdown();
+                forkJoinPool.shutdown();
 
                 try {
-                    forkJoinPoolool.awaitTermination(1, TimeUnit.DAYS);
-                    if (forkJoinPoolool.isTerminated()) {
+                    forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
+                    if (forkJoinPool.isTerminated()) {
+                        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+                        for(int i=0;i<N;i++) System.out.println(out[i]);
                         long endTime = System.currentTimeMillis();
                         long totalTime = endTime - startTime;
                         System.out.println("end time is: " + endTime);
@@ -125,27 +115,27 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     public class MandelbrotTask extends RecursiveAction {
         private static  final long serialVersionUID = 6136927121059165206L;
 
-        private final  int THRESHOLD = poolLength;
-        int index;
-        public MandelbrotTask(int index){
-            this.index = index;
-        }
+        private final  int THRESHOLD = 0;
+
         @Override
         public void compute() {
-            if (index >= THRESHOLD) return;
-
-            else{
+            if (index >= THRESHOLD) {
+                index--;
                 int y = 1;
-                byte res=0;
+                byte res = 0;
                 for (int xb = 0; xb < out[y].length; xb++) {
                     out[y][xb] = (byte) getByte(xb * 8, y);
-                    res= out[y][xb];
+                    res = out[y][xb];
                 }
-                System.out.println((res));
+                System.out.println("res is: "+String.valueOf(res));
 
-                MandelbrotTask worker = new MandelbrotTask(index+1);
-//                worker.fork();
+                MandelbrotTask worker = new MandelbrotTask();
                 worker.invoke();
+            }
+            else{
+
+
+                return;
             }
         }
     }
