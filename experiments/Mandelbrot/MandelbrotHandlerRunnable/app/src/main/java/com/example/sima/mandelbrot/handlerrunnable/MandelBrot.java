@@ -13,13 +13,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.view.View.VISIBLE;
 
+/**
+ *
+ * @author Sima Mehri
+ */
+
 public class MandelBrot extends AppCompatActivity {
     long startTime;
     long endTime = startTime;
-    long totalTime;
     double duration;
-    boolean mainThread = true;
-    boolean[] threads;
     int N;
     byte[][] out;
     static AtomicInteger yCt;
@@ -107,11 +109,6 @@ public class MandelBrot extends AppCompatActivity {
                     }
                 } while (--j > 0);
                 res = (res << 2) + b;
-//            try {
-//                Thread.sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
             }
             return res ^ -1;
         }
@@ -130,7 +127,7 @@ public class MandelBrot extends AppCompatActivity {
                 }
             });
 
-            int poolLength = 32;
+            int poolLength = 4;
             for (int j=0; j<8000; j++){
                pool = new Thread[poolLength];
                 for (int i = 0; i < pool.length; i++) {
@@ -140,7 +137,6 @@ public class MandelBrot extends AppCompatActivity {
                             while ((y = yCt.getAndIncrement()) < out.length) {
                                 putLine(y, out[y]);
                             }
-//                            System.out.println(out[y]);
                         }
                     };
                 }
@@ -161,13 +157,6 @@ public class MandelBrot extends AppCompatActivity {
             System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
             for(int i=0;i<N;i++) System.out.println(out[i]);
 
-
-//            if(System.nanoTime()>endTime) endTime= System.nanoTime();
-//
-//            if(mainThread) totalTime = (endTime - startTime)/1000000;
-//            System.out.println("end time is: "+endTime);
-//            System.out.println("Total time is: "+totalTime);
-//            return String.valueOf(totalTime);
 
             handler.post(new Runnable() {
                 @Override
