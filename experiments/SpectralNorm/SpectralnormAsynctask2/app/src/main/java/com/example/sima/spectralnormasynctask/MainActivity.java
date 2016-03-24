@@ -7,6 +7,12 @@ import android.support.v7.app.AppCompatActivity;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+/**
+*
+* @author Sima Mehri
+*/
+
+
 public class MainActivity extends AppCompatActivity {
     long startTime;
     int numThread = 4;
