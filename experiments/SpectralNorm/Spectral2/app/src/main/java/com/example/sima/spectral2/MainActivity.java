@@ -6,6 +6,11 @@ import android.os.Bundle;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+/**
+ *
+ * @author Sima Mehri
+ */
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

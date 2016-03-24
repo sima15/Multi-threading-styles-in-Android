@@ -8,6 +8,10 @@ import java.text.NumberFormat;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+/**
+ *
+ * @author Sima Mehri
+ */
 
 public class MainActivity extends AppCompatActivity {
     long startTime;

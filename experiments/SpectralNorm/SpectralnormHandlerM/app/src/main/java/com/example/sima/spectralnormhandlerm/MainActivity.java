@@ -14,6 +14,11 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+/**
+ *
+ * @author Sima Mehri
+ */
+
 public class MainActivity extends AppCompatActivity {
     Handler handler = new Handler();
     long startTime;
@@ -21,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     static Approximate[] ap;
     Lock lock = new Lock();
     TextView view;
+    long duration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +34,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         view = (TextView)findViewById(R.id.textView);
 
-        NetworkH w1= new NetworkH();
-        w1.start();
+//        NetworkH w1= new NetworkH();
+//        w1.start();
+        JobHandler hndlr = new JobHandler();
+        hndlr.start();
+
         try {
-            w1.join();
+//            w1.join();
+            hndlr.join();
+
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -58,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
 
     public class Spectral implements  Runnable{
 
-        Handler handler;
-        public Spectral(Handler handler) {
-            this.handler = handler;
+//        Handler handler;
+        public Spectral(Handler han) {
+            handler = han;
         }
 
         public void  run(){
@@ -76,15 +87,15 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            final long duration = System.currentTimeMillis() - startTime;
+            duration = System.currentTimeMillis() - startTime;
             System.out.println("total time: "  +duration+  "ms");
 
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    view.setText((int) duration);
-                }
-            });
+//            handler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    view.setText((int) duration);
+//                }
+//            });
         }
 
     }
@@ -294,8 +305,6 @@ public class MainActivity extends AppCompatActivity {
             }
             for(int i=0; i<=6; i++) {
                 try {
-//                startConnection = startMonsoon.openConnection();
-//                startConnection.connect();
 
                     HttpURLConnection con = (HttpURLConnection) startMonsoon.openConnection();
                     con.setRequestMethod("GET");
@@ -309,8 +318,6 @@ public class MainActivity extends AppCompatActivity {
                     StringBuffer response = new StringBuffer();
                     System.out.println(response.toString());
 
-//        		while ((inputLine = in.readLine()) != null) {
-//                    response.append(in.readLine());
                     startTime = System.currentTimeMillis();
                     System.out.println("Started...");
                     numThread =(int) Math.pow(2, i);
@@ -319,8 +326,6 @@ public class MainActivity extends AppCompatActivity {
                     hndlr.join();
 
                     in.close();
-
-                    //print result
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -332,20 +337,15 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("Duration: "+ (endTime-startTime));
                 try {
                     StringBuilder sb = new StringBuilder("http://129.123.7.199:8000/save?file=SpectralnormHandlerM");
-//                    StringBuilder sb = new StringBuilder("http://localhost:8000/save?file=ImageBlurExplicit");
-
 
                     sb.append(String.format("%d%s\n", i, ".pt5"));
                     System.out.println(sb);
-                    //String urlString = "http://129.123.7.199:8000/save?file=ImageBlurExplicit.pt5";
                     System.out.println("trying to end the connection");
                     endMonsoon = new URL(String.valueOf(sb));
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
                 try {
-//                endConnection = endMonsoon.openConnection();
-//                endConnection.connect();
                     HttpURLConnection endCon = (HttpURLConnection) endMonsoon.openConnection();
                     endCon.setRequestMethod("GET");
                     endCon.setRequestProperty("User-Agent", USER_AGENT);
