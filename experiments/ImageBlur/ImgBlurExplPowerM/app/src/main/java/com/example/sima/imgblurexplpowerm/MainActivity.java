@@ -1,20 +1,14 @@
 package com.example.sima.imgblurexplpowerm;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     Bitmap[] bmpArray; // = new Bitmap[numThreads];
     Object lock1 = new Object();
     TextView view;
+    int repeatNum = 100;
 
     public enum Style {
         Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
@@ -105,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         AsyncTaskBlur task = new AsyncTaskBlur(this);
         task.execute();
-
     }
 
     private void startExecutor() {
@@ -136,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startHandlerM() {
+        bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         Handler handler = new Handler();
         Thread connectionThread = new Thread(new HandlerM(this, handler));
         connectionThread.start();
@@ -163,6 +158,13 @@ public class MainActivity extends AppCompatActivity {
 
         style = Style.HandlerR;
 
+        startAsyncTask();
+//
+//        for (int j = 0; j < repeatNum; j++) {
+//
+//        }
+
+/*
         PowerMonitor powerMonitor = new PowerMonitor();
         while (true) {
             String targetString = powerMonitor.getTarget();
@@ -192,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
             SystemClock.sleep(10000);
 
 
-        }
+        }*/
     }
 
 

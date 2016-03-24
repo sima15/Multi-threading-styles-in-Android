@@ -26,15 +26,17 @@ class AsyncTaskBlur extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... v) {
-        mainActivity.bmpArray = new Bitmap[mainActivity.numThreads];
-        mainActivity.splitImage();
-        pool = new Worker[mainActivity.numThreads];
-        for (int j = 0; j < mainActivity.numThreads; j++) {
-            pool[j] = new Worker(mainActivity, mainActivity.pieceWidth, mainActivity.h, j, mainActivity.bmpArray[j]);
-            pool[j].start();
+        for(int i=0; i<mainActivity.repeatNum; i++) {
+            mainActivity.bmpArray = new Bitmap[mainActivity.numThreads];
+            mainActivity.splitImage();
+            pool = new Worker[mainActivity.numThreads];
+            for (int j = 0; j < mainActivity.numThreads; j++) {
+                pool[j] = new Worker(mainActivity, mainActivity.pieceWidth, mainActivity.h, j, mainActivity.bmpArray[j]);
+                pool[j].start();
+            }
         }
-
         return null;
+
     }
 
 
