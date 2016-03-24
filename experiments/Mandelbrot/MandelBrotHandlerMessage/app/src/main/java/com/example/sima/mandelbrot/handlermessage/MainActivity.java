@@ -11,6 +11,11 @@ import android.widget.ProgressBar;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ *
+ * @author Sima Mehri
+ */
+
 public class MainActivity extends AppCompatActivity {
     final static int SET_PROGRESS_BAR_VISIBILITY = 0;
     final static int PROGRESS_UPDATE = 1;
@@ -21,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
     double duration;
 
     Thread[] pool;
-//    int input;
     int N;
     byte[][] out;
     static AtomicInteger yCt;
@@ -79,9 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 yCt = new AtomicInteger();
                 out = new byte[N][(N + 7) / 8];
 
-//                int loopCount = 10 * Runtime.getRuntime().availableProcessors();
-//                System.out.println("Available processors: "+loopCount/10);
-
                 Thread t1 = new Thread(new MandelBrotMsgHnd(handler));
                 t1.start();
                 try {
@@ -135,11 +136,6 @@ public class MainActivity extends AppCompatActivity {
             line[xb] = (byte) getByte(xb * 8, y);
     }
 
-//    static void putLine(int y, byte[] line) {
-//        for (int xb = 0; xb < line.length; xb++)
-//            line[xb] = (byte) getByte(xb * 8, y);
-//    }
-
     public class MandelBrotMsgHnd implements Runnable {
         private final Handler handler;
 
@@ -186,8 +182,6 @@ public class MainActivity extends AppCompatActivity {
             duration = (endTime - startTime)/1000000.00;
             System.out.println("end time: " + endTime);
             System.out.println("Duration: " + duration);
-//            System.out.print(duration);
-
 
             msg = handler.obtainMessage(SET_RESULT, String.valueOf( (int) duration));
             handler.sendMessage(msg);
