@@ -17,29 +17,29 @@ public class MainActivity extends AppCompatActivity {
     long startTime;
     int numThread = 4;
     ForkJoinPool pool;
-    Lock lock = new Lock();
-    double vBv = 0, vv = 0;
     Approximate[] threads;
-    double[] vbv = new double[2];
-    int appIndex = 20;
+    int appIndex = 5;
 
-//    private int range_begin, range_end;
-//    double m_vBv = 0, m_vv = 0;
-    private double[] _u;
-    private double[] _v;
-    private double[] _tmp;
+    int range;
+    double m_vBv = 0, m_vv = 0;
+//    private double[] _u;
+//    private double[] _v;
+//    private double[] _tmp;
+
+    double[] uArray;
+    double[] vArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startTime = System.currentTimeMillis();
-        System.out.println("Start time: "+ startTime);
+        System.out.println("Start time: " + startTime);
 
         final NumberFormat formatter = new DecimalFormat("#.000000000");
         int n = 16;
         try {
-            for(int i = 0; i < 1; i++) {
+            for (int i = 0; i < 1; i++) {
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
                 Thread.sleep(1000);
             }
@@ -69,103 +69,39 @@ public class MainActivity extends AppCompatActivity {
             int r1 = i * chunk;
             int r2 = (i < (numThread - 1)) ? r1 + chunk : n;
 
-            threads[i] = new Approximate(u, v, tmp, r1, r2, 0, 0);
+            threads[i] = new Approximate(u, v, tmp, r1, r2);
 //            future = pool.submit(threads[i]);
             pool.submit(threads[i]);
+            range += r2 - r1;
         }
 
-//        lock.justStarted = true;
-//
-//        synchronized (lock) {
-//            int j = 0;
-//            while (!checkDone()) {
-//                if (!lock.checkIndex() || lock.justStarted) {
-//                    lock.justStarted = false;
-//                    lock.wait();
-//                }
-//
-//                //wake all threads
-//                for (Approximate a : threads) {
-//                    synchronized (a) {
-//                        a.notifyAll();
-//                    }
-//                }
-//                lock.justStarted = true;
-//                System.out.println("iteration: " + (j++));
-//            }
-//        }
-//
-//            for (int i = 0; i < numThread; i++) {
-//                try {
-//                    vBv += future.get()[0];
-//                    vv += future.get()[1];
-//
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        pool.shutdown();
-//
-//        return Math.sqrt(vBv); // / vv);
-//        }
-
-//        for (int i = range_begin; i < range_end; i++) {
-//            m_vBv += _u[i] * _v[i];
-//            m_vv += _v[i] * _v[i];
-//        }
-//        vbv[0] = m_vBv;
-//        vbv[1] = m_vv;
-
+        uArray = new double[range];
+        vArray = new double[range];
 
         pool.shutdown();
-        int i=0;
-        while(i<numThread) {
-            for (i = 0; i < numThread; i++) {
-                if (threads[i].isDone()) {
-                    try {
-//                vBv += future.get()[0];
-                        vBv += threads[i].m_vBv;
-//                vv += future.get()[1];
-//                    vBv += m_vBv;
-                        vv += threads[i].m_vv;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else continue;
-            }
-        }
         pool.awaitTermination(500, TimeUnit.SECONDS);
 
-
-        return Math.sqrt(vBv / vv);
-    }
-
-    public  synchronized boolean checkDone() {
-        for (Approximate a : threads) {
-            if (!a.done) return false;
+        for (int i = 0; i < range; i++) {
+            m_vBv += uArray[i] * vArray[i];
+            m_vv += vArray[i] * vArray[i];
         }
-        return true;
+        return Math.sqrt(m_vBv / m_vv);
     }
-
-//    public synchronized void increment(){
-//        count++;
-//    }
 
     public class Approximate extends RecursiveAction {
-//        private double[] _u;
-//        private double[] _v;
-//        private double[] _tmp;
-        private static  final long serialVersionUID = 6136927121059165206L;
+        private double[] _u;
+        private double[] _v;
+        private double[] _tmp;
+        private static final long serialVersionUID = 6136927121059165206L;
         int THRESHOLD = 0;
 
 
         private int range_begin, range_end;
-        double m_vBv, m_vv;
 
-        public boolean done = false;
+        //        public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend, double num1, double num2) {
+        public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend) {
 
-        public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend, double num1, double num2) {
-            super();
+//            super();
 
             _u = u;
             _v = v;
@@ -173,40 +109,41 @@ public class MainActivity extends AppCompatActivity {
 
             range_begin = rbegin;
             range_end = rend;
-
-            m_vBv = num1;
-            m_vv = num2;
-            //start();
         }
-        public Approximate(double[] u, double[] v, double[] tmp){
 
-           try{
-            MultiplyAv(u, v);
-           }catch (Exception e){
-               e.printStackTrace();
-           }
+        public Approximate(double[] v, double[] tmp, int r1, int r2) {
+
+            try {
+                MultiplyAv(v, tmp);
+                range_begin = r1;
+                range_end = r2;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
 //            MultiplyAtAv( u,v, tmp);
 //            MultiplyAtAv( _v, _tmp, _u);
         }
 
-        public Approximate(double[] v, double[] tmp){
-            try{
-            MultiplyAtv(v, tmp);
-            }catch (Exception e){
+        public Approximate(double[] v, double[] tmp, int r1, int r2, int atv) {
+            try {
+                MultiplyAtv(v, tmp);
+
+                range_begin = r1;
+                range_end = r2;
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
 
         /* return element i,j of infinite matrix A */
-            private final double eval_A ( int i, int j){
-                int div = (((i + j) * (i + j + 1) >>> 1) + i + 1);
-                return 1.0 / div;
-            }
+        private final double eval_A(int i, int j) {
+            int div = (((i + j) * (i + j + 1) >>> 1) + i + 1);
+            return 1.0 / div;
+        }
 
         /* multiply vector v by matrix A, each thread evaluate its range only */
-
         private final void MultiplyAv(final double[] v, double[] Av) throws InterruptedException {
             for (int i = range_begin; i < range_end; i++) {
                 double sum = 0;
@@ -214,15 +151,9 @@ public class MainActivity extends AppCompatActivity {
                     sum += eval_A(i, j) * v[j];
 
                 Av[i] = sum;
+                uArray[i] = sum;
             }
             System.out.println(Thread.currentThread().getName() + " finished MultiplyAv");
-
-//            synchronized (this) {
-//                lock.increment();
-//                System.out.println(Thread.currentThread().getName() + " is waiting in MultiplyAv");
-//                this.wait();
-//            }
-
         }
 
         /* multiply vector v by matrix A transposed */
@@ -233,109 +164,94 @@ public class MainActivity extends AppCompatActivity {
                     sum += eval_A(j, i) * v[j];
 
                 Atv[i] = sum;
+                vArray[i] = sum;
             }
             System.out.println(Thread.currentThread().getName() + " finished MultiplyAtv");
-
-//            synchronized (this) {
-//                lock.increment();
-//                System.out.println(Thread.currentThread().getName() + " is waiting in MultiplyAtv");
-//                this.wait();
-//            }
         }
-
         /* multiply vector v by matrix A and then by matrix A transposed */
-        private final void MultiplyAtAv(final double[] v, double[] tmp, double[] AtAv) {
-            try {
-                MultiplyAv(v, tmp);
-                // all thread must syn at completion
-                MultiplyAtv(tmp, AtAv);
-                // all thread must syn at completion
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-//        protected void computeDirectly() {
-//
-//
-//            for (int i = range_begin; i < range_end; i++) {
-//                m_vBv += _u[i] * _v[i];
-//                m_vv += _v[i] * _v[i];
+//        private final void MultiplyAtAv(final double[] v, double[] tmp, double[] AtAv) {
+//            try {
+//                MultiplyAv(v, tmp);
+//                // all thread must syn at completion
+//                MultiplyAtv(tmp, AtAv);
+//                // all thread must syn at completion
+//            } catch (Exception e) {
+//                e.printStackTrace();
 //            }
-//                vbv[0] = m_vBv;
-//                vbv[1] = m_vv;
-//
-//
-////            return vbv;
 //        }
 
 
-        @Override
-        public void compute() {
-            if(appIndex >= THRESHOLD){
-                appIndex--;
-                Approximate ap1 = new Approximate(_u, _tmp, _v);
-                Approximate ap2 = new Approximate(_v, _tmp, _u);
+            @Override
+            public void compute () {
+                if (appIndex >= THRESHOLD) {
+                    appIndex--;
+                    Approximate ap11 = new Approximate(_tmp, _v, range_begin, range_end);
+                    Approximate ap12 = new Approximate(_tmp, _v, range_begin, range_end);
+                    Approximate ap13 = new Approximate(_tmp, _v, range_begin, range_end);
+                    Approximate ap14 = new Approximate(_tmp, _v, range_begin, range_end);
 
-                System.out.println("Index is: "+ appIndex);
-                ap1.fork();
-                ap2.fork();
-                ap1.join();
-                ap2.join();
-                Approximate ap3 = new Approximate(_u, _tmp);
-                Approximate ap4 = new Approximate(_v, _tmp);
-                ap3.fork();
-                ap4.fork();
-                ap3.join();
-                ap4.join();
+                    ap11.fork();
+                    ap12.fork();
+                    ap13.fork();
+                    ap14.fork();
 
-//                done = true;
-////                increment();
-//
-//                synchronized (lock) {
-//                    System.out.println("notify to main?");
-//                    lock.notify();
-//                }
-//                done = false;
-            }else{
-//                computeDirectly();
-                for (int i = range_begin; i < range_end; i++) {
-                    m_vBv += _u[i] * _v[i];
-                    m_vv += _v[i] * _v[i];
+                    System.out.println("Index is: " + appIndex);
+
+                    Approximate ap21 = new Approximate(_tmp, _u, range_begin, range_end);
+                    Approximate ap22 = new Approximate(_tmp, _u, range_begin, range_end);
+                    Approximate ap23 = new Approximate(_tmp, _u, range_begin, range_end);
+                    Approximate ap24 = new Approximate(_tmp, _u, range_begin, range_end);
+
+                    ap21.fork();
+                    ap22.fork();
+                    ap23.fork();
+                    ap24.fork();
+
+//                Approximate ap2 = new Approximate(_v, _tmp, _u);
+                    Approximate ap31 = new Approximate(_u, _tmp, range_begin, range_end, 5);
+                    Approximate ap32 = new Approximate(_u, _tmp, range_begin, range_end, 5);
+                    Approximate ap33 = new Approximate(_u, _tmp, range_begin, range_end, 5);
+                    Approximate ap34 = new Approximate(_u, _tmp, range_begin, range_end, 5);
+
+                    ap31.fork();
+                    ap32.fork();
+                    ap33.fork();
+                    ap34.fork();
+
+                    Approximate ap41 = new Approximate(_v, _tmp, range_begin, range_end, 5);
+                    Approximate ap42 = new Approximate(_v, _tmp, range_begin, range_end, 5);
+                    Approximate ap43 = new Approximate(_v, _tmp, range_begin, range_end, 5);
+                    Approximate ap44 = new Approximate(_v, _tmp, range_begin, range_end, 5);
+
+                    ap41.fork();
+                    ap42.fork();
+                    ap43.fork();
+                    ap44.fork();
+
+                    ap11.join();
+                    ap12.join();
+                    ap13.join();
+                    ap14.join();
+
+                    ap21.join();
+                    ap22.join();
+                    ap23.join();
+                    ap24.join();
+
+                    ap31.join();
+                    ap32.join();
+                    ap33.join();
+                    ap34.join();
+
+                    ap41.join();
+                    ap42.join();
+                    ap43.join();
+                    ap44.join();
+                } else {
+                    return;
                 }
-                vbv[0] = m_vBv;
-                vbv[1] = m_vv;
-                return;
-            }
-
-//            return result;
-        }
-    }
-
-    class Lock {
-        public int index = 0;
-        public boolean justStarted = false;
-
-        synchronized boolean increment() {
-            index++;
-            if (index % numThread == 0) {
-                synchronized(lock) {	//the last thread is done
-                    index = 0;
-                    lock.notify();
-                }
-                return true;
-            } else {
-                return false;
             }
         }
-
-        synchronized boolean checkIndex() {
-            if (index % numThread != 0) {
-                return false;
-            }
-
-            return true;
-        }
-    }
 }
 
 
