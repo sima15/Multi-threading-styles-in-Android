@@ -1,14 +1,21 @@
 package com.example.sima.imgblurexplpowerm;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,8 +39,7 @@ public class MainActivity extends AppCompatActivity {
     Bitmap[] bmpArray; // = new Bitmap[numThreads];
     Object lock1 = new Object();
     TextView view;
-    int repeatNum = 100;
-
+    public int repeatNum = 50;
     public enum Style {
         Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
     }
@@ -100,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         AsyncTaskBlur task = new AsyncTaskBlur(this);
         task.execute();
+
     }
 
     private void startExecutor() {
@@ -158,18 +165,12 @@ public class MainActivity extends AppCompatActivity {
 
         style = Style.HandlerR;
 
-        startAsyncTask();
-//
-//        for (int j = 0; j < repeatNum; j++) {
-//
-//        }
-
-/*
         PowerMonitor powerMonitor = new PowerMonitor();
-        while (true) {
+        powerMonitor.startMonitoring();
+       while (true) {
             String targetString = powerMonitor.getTarget();
 
-            if (targetString == "Done") break;
+            if (targetString.equalsIgnoreCase("Done")) break;
 
             String[] target = targetString.split(" ");
 
@@ -178,23 +179,26 @@ public class MainActivity extends AppCompatActivity {
             }catch (Exception e){
                 Log.d("Parsing Error", targetString);
                 Log.d("Parsing Error", e.getMessage());
+                SystemClock.sleep(10000);
                 continue;
             }
             numThreads = Integer.parseInt(target[1]);
 
-            int repeatNum = 100;
-            Log.i("Thread Style Info", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
-            powerMonitor.startMonitoring();
+
+           Log.i("Thread Style Info", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
+
 
             for (int j = 0; j < repeatNum; j++) {
                 startTest();
+                if(style.equals(Style.AsyncTask)){
+                    break;
+                }
             }
 
-            powerMonitor.saveMonitoring(String.format("ImageBlur_%s_%d", style.name(), numThreads));
-            SystemClock.sleep(10000);
-
-
-        }*/
+            powerMonitor.stopMonitoring(String.format("ImageBlur_%s_%d", style.name(), numThreads));
+            //SystemClock.sleep(1000);
+        }
+        powerMonitor.saveMonitoring();
     }
 
 
