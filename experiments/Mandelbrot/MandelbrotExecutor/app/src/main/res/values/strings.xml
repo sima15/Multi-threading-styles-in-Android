@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MandelbrotExecutor</string>
+    <string name="submitButton">Submit</string>
+    <string name="inputText">Input text</string>
+</resources>
