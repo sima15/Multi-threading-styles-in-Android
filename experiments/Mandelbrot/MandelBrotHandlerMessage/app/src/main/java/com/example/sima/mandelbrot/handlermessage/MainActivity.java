@@ -1,13 +1,10 @@
 package com.example.sima.mandelbrot.handlermessage;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,37 +14,25 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class MainActivity extends AppCompatActivity {
-    final static int SET_PROGRESS_BAR_VISIBILITY = 0;
-    final static int PROGRESS_UPDATE = 1;
-    final static int SET_RESULT = 2;
+    final static int SET_RESULT = 0;
 
     long startTime;
-    long endTime;
     double duration;
 
     Thread[] pool;
-    int N;
+    int N= 500;
     byte[][] out;
     static AtomicInteger yCt;
     static double[] Crb;
     static double[] Cib;
 
 
-    private ProgressBar mProgressBar;
     private EditText textHandler;
 
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg){
             switch (msg.what){
-                case SET_PROGRESS_BAR_VISIBILITY: {
-                    mProgressBar.setVisibility((Integer) msg.obj);
-                    break;
-                }
-                case PROGRESS_UPDATE: {
-                    mProgressBar.setProgress((Integer) msg.obj);
-                    break;
-                }
                 case SET_RESULT: {
                     textHandler.setText((String) msg.obj);
                     break;
@@ -63,39 +48,33 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textHandler = (EditText) findViewById(R.id.input);
-        mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
-        Button submitButton = (Button) findViewById(R.id.submitButton);
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startTime = System.nanoTime();
-                System.out.println("Start time is: " + startTime);
 
-                String inputStr = String.valueOf(textHandler.getText());
-                N = Integer.parseInt(inputStr);
-                Crb = new double[N + 7];
-                Cib = new double[N + 7];
-                double invN = 2.0 / N;
-                for (int i = 0; i < N; i++) {
-                    Cib[i] = i * invN - 1.0;
-                    Crb[i] = i * invN - 1.5;
-                }
-                yCt = new AtomicInteger();
-                out = new byte[N][(N + 7) / 8];
+        startTime = System.nanoTime();
+        System.out.println("Start time is: " + startTime);
 
-                Thread t1 = new Thread(new MandelBrotMsgHnd(handler));
-                t1.start();
-                try {
-                    t1.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        for(int i=0; i<800; i++) doJob();
 
-
-            }
-        });
     }
 
+    protected  void doJob(){
+        Crb = new double[N + 7];
+        Cib = new double[N + 7];
+        double invN = 2.0 / N;
+        for (int i = 0; i < N; i++) {
+            Cib[i] = i * invN - 1.0;
+            Crb[i] = i * invN - 1.5;
+        }
+        yCt = new AtomicInteger();
+        out = new byte[N][(N + 7) / 8];
+
+        Thread t1 = new Thread(new MandelBrotMsgHnd(handler));
+        t1.start();
+        try {
+            t1.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     static int getByte(int x, int y) {
         int res = 0;
         for (int i = 0; i < 8; i += 2) {
@@ -145,11 +124,8 @@ public class MainActivity extends AppCompatActivity {
 
         public void run() {
             Message msg;
-            msg = handler.obtainMessage(SET_PROGRESS_BAR_VISIBILITY, ProgressBar.VISIBLE);
-            handler.sendMessage(msg);
 
-            int poolLength =8;
-            for (int i = 0; i <= 8000; i++) {
+            int poolLength =4;
                 pool = new Thread[poolLength];
                 for (int j = 0; j < pool.length; j++) {
                     pool[j] = new Thread() {
@@ -161,26 +137,21 @@ public class MainActivity extends AppCompatActivity {
                         }
                     };
                 }
-            }
             for (int k=0; k<poolLength; k++) {
                 pool[k].start();
             }
 
             for (int k=0; k<poolLength; k++) {
                 try{
-                    if (pool[k].isAlive()) pool[k].join();
-                    System.out.println("Waiting for thread " + k + " to complete");
+                    if (pool[k].isAlive()){
+                        pool[k].join();
+                    }
                 }catch (InterruptedException e){
                     e.printStackTrace();
                 }
             }
 
-            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-            for(int i=0;i<N;i++) System.out.println(out[i]);
-
-            endTime = System.nanoTime();
-            duration = (endTime - startTime)/1000000.00;
-            System.out.println("end time: " + endTime);
+            duration = (System.nanoTime() - startTime)/1000000.00;
             System.out.println("Duration: " + duration);
 
             msg = handler.obtainMessage(SET_RESULT, String.valueOf( (int) duration));

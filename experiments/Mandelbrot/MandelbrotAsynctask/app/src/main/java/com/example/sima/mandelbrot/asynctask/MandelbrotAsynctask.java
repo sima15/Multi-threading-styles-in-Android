@@ -21,7 +21,7 @@ public class MandelbrotAsynctask extends Activity {
     long startTime;
     long endTime = startTime;
     long totalTime;
-    int N;
+    int N =500;
     TextView resultText;
 
 

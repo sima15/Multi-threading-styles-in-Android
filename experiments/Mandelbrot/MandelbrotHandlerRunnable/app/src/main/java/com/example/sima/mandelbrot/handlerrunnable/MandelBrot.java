@@ -1,17 +1,11 @@
 package com.example.sima.mandelbrot.handlerrunnable;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static android.view.View.VISIBLE;
 
 /**
  *
@@ -20,9 +14,8 @@ import static android.view.View.VISIBLE;
 
 public class MandelBrot extends AppCompatActivity {
     long startTime;
-    long endTime = startTime;
     double duration;
-    int N;
+    int N = 500;
     byte[][] out;
     static AtomicInteger yCt;
     static double[] Crb;
@@ -31,8 +24,6 @@ public class MandelBrot extends AppCompatActivity {
     Thread[] pool;
 
     Handler handler = new Handler();
-    EditText textHandler;
-    private ProgressBar mProgressBar;
     private TextView resultText;
 
     @Override
@@ -40,42 +31,35 @@ public class MandelBrot extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandel_brot);
 
-        mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
-        textHandler = (EditText) findViewById(R.id.input);
-        Button submit = (Button) findViewById(R.id.submitButton);
         resultText = (TextView)findViewById(R.id.result);
 
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startTime = System.nanoTime();
-                System.out.println("Start time is: " + startTime);
+        startTime = System.nanoTime();
+        System.out.println("Start time is: " + startTime);
 
-                String inputStr = String.valueOf(textHandler.getText());
-                N = Integer.parseInt(inputStr);
-                Crb = new double[N + 7];
-                Cib = new double[N + 7];
-                double invN = 2.0 / N;
-                for (int i = 0; i < N; i++) {
-                    Cib[i] = i * invN - 1.0;
-                    Crb[i] = i * invN - 1.5;
-                }
-                yCt = new AtomicInteger();
-                out = new byte[N][(N + 7) / 8];
+        for(int i=0; i<800; i++) doJob();
 
-                try {
-                    Thread t = new Thread(new Mandelbrot2());
-                    t.start();
-                    t.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                endTime = System.nanoTime();
-                System.out.println("End time: "+ endTime);
-                duration = (endTime - startTime)/1000000.00;
-                System.out.println("Duration: "+ duration);
-            }
-        });
+        duration = (System.nanoTime() - startTime)/1000000.00;
+        System.out.println("Duration: "+ duration);
+    }
+
+    protected  void doJob(){
+        Crb = new double[N + 7];
+        Cib = new double[N + 7];
+        double invN = 2.0 / N;
+        for (int i = 0; i < N; i++) {
+            Cib[i] = i * invN - 1.0;
+            Crb[i] = i * invN - 1.5;
+        }
+        yCt = new AtomicInteger();
+        out = new byte[N][(N + 7) / 8];
+
+        try {
+            Thread t = new Thread(new Mandelbrot2());
+            t.start();
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
         static int getByte(int x, int y) {
             int res = 0;
@@ -121,14 +105,8 @@ public class MandelBrot extends AppCompatActivity {
      class Mandelbrot2 implements  Runnable {
 
         public void run() {
-            handler.post(new Runnable() {
-                public void run() {
-                    mProgressBar.setVisibility(VISIBLE);
-                }
-            });
 
             int poolLength = 4;
-            for (int j=0; j<8000; j++){
                pool = new Thread[poolLength];
                 for (int i = 0; i < pool.length; i++) {
                     pool[i] = new Thread() {
@@ -140,7 +118,7 @@ public class MandelBrot extends AppCompatActivity {
                         }
                     };
                 }
-            }
+
             for (int k=0; k<poolLength; k++) {
                 pool[k].start();
             }
@@ -148,26 +126,16 @@ public class MandelBrot extends AppCompatActivity {
             for (int k=0; k<poolLength; k++) {
                 try{
                     if (pool[k].isAlive()) pool[k].join();
-                    System.out.println("Waiting for thread " + k + " to complete");
                 }catch (InterruptedException e){
                     e.printStackTrace();
                 }
             }
 
-            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-            for(int i=0;i<N;i++) System.out.println(out[i]);
-
 
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    resultText.setText(String.valueOf( (int) duration));
-                }
-            });
-            handler.post(new Runnable() {
-
-                public void run() {
-                    mProgressBar.setVisibility(View.INVISIBLE);
+                    resultText.setText(String.valueOf((int) duration));
                 }
             });
         }
