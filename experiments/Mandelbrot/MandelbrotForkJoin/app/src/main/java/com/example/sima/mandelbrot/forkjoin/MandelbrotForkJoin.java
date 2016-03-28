@@ -2,8 +2,6 @@ package com.example.sima.mandelbrot.forkjoin;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 
 import java.util.concurrent.ForkJoinPool;
@@ -13,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MandelbrotForkJoin extends AppCompatActivity {
 
-    int N ;
+    int N = 500;
     long startTime;
     int poolLength;
     EditText inputText;
@@ -32,22 +30,17 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot_fork_join);
 
-        Button submitButton = (Button)findViewById(R.id.submitButton);
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
                 startTime = System.currentTimeMillis();
                 System.out.println("Start time is: " + startTime);
                 inputText = (EditText) findViewById(R.id.inputText);
-                N = Integer.parseInt(inputText.getText().toString());
+
 
                 for(int i=0; i<800; i++)
                     doJob();
 
                 inputText.setText(String.valueOf(totalTime));
-            }
-        });
     }
+
 
     public void doJob(){
         Crb = new double[N + 7];
@@ -61,11 +54,9 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         out = new byte[N][(N + 7) / 8];
 
         int poolLength = 32;
-//        for (int loopCount = 0; loopCount < 800; loopCount++) {
             MandelbrotTask task = new MandelbrotTask();
             forkJoinPool = new ForkJoinPool(poolLength);
             forkJoinPool.invoke(task);
-//        }
         forkJoinPool.shutdown();
 
         try {
