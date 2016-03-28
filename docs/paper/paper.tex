@@ -16,6 +16,12 @@
 \usepackage{algorithmic}
 \usepackage{pbox}
 
+\def\denseitems
+{
+  \itemsep1pt plus1pt minus1pt
+  \parsep0pt plus0pt
+  \parskip0pt\topsep0pt
+}
 %\setstretch{.98}
 
 %for anomalization
@@ -45,7 +51,14 @@ Email: \{sima, daehyeok\}@aggiemail.usu.edu and young.kwon@usu.edu}
 \maketitle
 
 \begin{abstract}
-With the resource constraints of Internet of Things (IoT) devices, performance and energy efficiency have become an important IoT software design consideration while minimizing resource usages. To provide efficient communication for resource-constrained applications, several IoT protocols have been introduced, and yet there are few existing guidelines to help the programmer choose an appropriate communication protocol. To address this limitation, we evaluate five different communication protocols including CoAP, MQTT, MQTT-SN, WebSocket, and TCP. Our result can help IoT application programmers make informed decision when choosing communication protocols for their applications.
+With battery capacities remaining a key physical constraint for mobile devices, energy efficiency has become and important software design consideration. 
+%need to state a problem
+In this paper, we report on the findings of a systematic study we conducted to compare and contrast different multi-threading styles on multi-core mobile architectures in terms of their energy consumption patterns.
+Based on our findings, we present a set of practical guidelines for the programmer to implement a multi-threaded mobile application. Finally our guidelines are provided as automated software refactoring mechanisms.
+
+High energy consumption of smart phones is a major complaint of the users these days. While many researchers have attempted to design experiments and set up test cases in order to figure out a solution to this problem, the issue is still remaining.  
+In this work, we have tried to investigate the energy consumption of Android applications which make use of different multi-threading algorithms. Comparing such results, we have tried to distinguish suitable types of threading constructs for the given application development requirements which is hoped to provide useful guidelines for mobile app developers in selecting the best possible threading styles for their applications. This way, not only will the developers feel more confident in their selections, but the end-users also, will benefit from the extended battery life-time.  
+
 \end{abstract}
 
 %\begin{IEEEkeywords}
@@ -54,24 +67,90 @@ With the resource constraints of Internet of Things (IoT) devices, performance a
 
 %Intro - 1 page
 \section{Introduction} 
+%Mobile devices have been surpassing stationary computers as the primary means of utilizing computing. As a result, several software design assumptions need to be fundamentally reconsidered to produce applications that use the limited resources of a mobile device optimally. One such resource is energy, provided by constantly improving but always limited batteries. Indeed, energy efficiency has become an important software design constraint
+
+Widespread use of hand-held devices along with proliferation of power-hungry apps has led to an increased importance of energy efficiency in such gadgets. Consequently, many researchers including computer scientists have been studying various methods in order to minimize energy consumption of mobile devices.
+
+Among previous work, there exist studies on general energy consumption patterns, comparing battery drainage related to different parts and applications of cellphones such as Wi-Fi, GPS, camera, music player, etc. and efforts to improve energy behavior of cellphones in one specific application. There are also studies on how multi-threading affects the power consumption of PCs while the focus has mostly been on synchronization and locks. However, recently, smart-phone production companies have started producing multi-core devices which can significantly improve user experience.
+
+Despite this mass production and usage of multi-core smartphones, no previous work, to the best of our knowledge, has studied effects of multi-threading on energy behavior of such devices. Therefore, we aim at investigating how different threading styles affect energy consumption of the smartphones. In other words, we try to figure out the result of programmers’ threading style selection at the time of app creation on the power consumed in the phone.
+
+Throughout this paper, we will address the following topics: (1) Effects of different thread management constructs on energy behavior of a smartphone (2) Energy-performance adjustment 
+
+
+Research questions:
+\begin{itemize} \denseitems
+	\item \textbf{R1} How do different multi-threading styles impact on energy consumption?
+	\item \textbf{R2} What is the relationship between the number of threads and energy consumption?
+	\item \textbf{R3} What is the relationship between the number of cores and energy consumption?
+	\item \textbf{R4} What is the relationship between data volume/access and energy consumption?
+	\item \textbf{R5} Do multi-thrading styles in different architecture have different energy consumption patterns?
+	\item \textbf{R6} How can one refactor an energy-inefficient mobile application?
+\end{itemize}
 
 \section{Motivation and Background} 
+\subsection{Motivation}
 
 \subsection{Technical Background}
 In the following discussion, we describe different multi-threading styles that we have evaluated in this study.
 
-\subsubsection{Programming Patterns for multi-threaded mobile applications}
+\subsubsection{Programming Patterns for Multi-Threaded Mobile Applications}
+
+The threading styles which are investigated in this study are selected from two groups, one being general Java threading techniques and the other, the styles specific to Android development. We will further explain below about distinct multi-threading patterns which we have selected to investigate from these two groups. 
+
+The following patterns are popular threading ways to implement multi-threading.
+\begin{itemize}
+	\item Explicit threading: According to this pattern, the programmer manually creates a number of threads and allocates distinct tasks to them. 
+	\item Thread pooling: In this pattern, a pool of threads is created which can arbitrarily be of a fixed size. Then the threads implement the tasks that are submitted to the pool one at a time.
+	\item Fork Joining: A ForkJoinPool differs from other kinds of multi-threading patterns mainly by virtue of employing work-stealing algorithm where each thread maintains a buffer of its own where the tasks are submitted. Nonetheless, when a given thread’s buffer becomes empty, it starts stealing tasks from other threads’ buffers; hence, maximizing efficiency. Moreover, according to fork and join style, the tasks are split into smaller tasks up to a certain threshold where they can be computed directly. Later, the results of the subtasks are joined to make up the final result.
+\end{itemize}: 
+
+B.	Android specific multi-threading patterns 
+The first thread to be created and executed after an app is launched is the main thread (Also called the UI thread since through it the application interacts with Android UI toolkit). However, developers are encouraged to make use of Threadhandler class to do background computations and therefore, decrease the burden of work in the main thread while also increasing the responsiveness of the program.
+
+\begin{itemize}
+	\item Thread handler (using Runnables): In this way of implementing handler class, Runnables are created and passed into the message queue of another thread which will execute the task. 
+	\item Thread handler (using messages): What distinguishes this style from the previous one is that instead of passing runnables, messages are sent to the new handler thread to perform the required task.  
+	\item AsyncTask: It is important to mention that Android UI Toolkit cannot be accessed from outside main thread, therefore handling ThreadHandler becomes more complicated. To facilitate this, another useful Java class for Android programming called AsyncTask is introduced. Though it is not a threading framework, it facilitates coding through providing separate APIs for background computations and UI thread calls.
+\end{itemize}
+
+
 
 \section{Experiments} 
+
 \subsection{Experiment Setup}
+The experimental setup includes a testbed with three Android phones and one server for offloading. Table \ref{table:devices} shows the device-specific values.
+Energy consumption was measured through Monsoon power monitor \cite{monsoon}. It directly connected to the battery of the device while the battery was already bypassed; therefore, the main power source being the power monitor than the phone battery. The current and voltage readings of the power monitor multiplied by the time taken to run the application were reported as energy consumption values. The measurements were repeated three times for each program and the average was reported.
+
+\begin{table}[h]
+\caption{Specifications of the testing devices}
+\label{table:devices}
+\centering \small
+\begin{tabular}{| l | l | l | l |}
+    \hline
+    \textbf{Devices} & \textbf{CPU} & \textbf{RAM} & \textbf{Battery} \\ \hline \hline
+    LG G Stylo & Quad-core 1.2GHz & 1GB & 3000mAh\\ \hline
+		LG Tribute & Quad-core 1.2GHz & 1GB & 2100mAh\\ \hline
+		Galaxy S5 & Quad-core 2.5GHz & 2GB & 2800mAh\\ \hline		
+\end{tabular}
+\end{table}
+
+
 \subsubsection{Benchmarks}
+
+
+In order to examine our target concurrent programming patterns, we use a simple Fibonacci series program implementation. The Fibonacci number of a given index is calculated via addition of the last two numbers in the series up to the specified point. An explicitly threaded implementation of this program is depicted in figure 1. Figures 2 and 3 also show the same program in thread pooling and ForkJoin styles, respectively. In addition, figures 4, 5 and 6 depict the Android specific concurrent programming patterns of the specified application..
+
+Three benchmarks were used in this study to examine the energy consumption patterns of the applications. Two of the mentioned benchmarks are chosen from a Debian-based language suite and the other one is an image blurring benchmark which are as follows:
 
 \begin{enumerate}
 	\item Big Integer
-	\item Mandelbrot
-	\item Spectralnorm
-	\item Image Blur
+	\item Mandelbrot: Mandelbrot images are created by sampling complex numbers and determining for each one if the result tends to infinity when a specific mathematical operation is executed on it.
+	\item Spectral norm: identifies the maximum singular value of a matrix.
+	\item Image Blurring: lurs a given image using box method.
 \end{enumerate}
+The mentioned benchmarks are CPU bound. Some mathematical calculations are performed and the result is displayed on the screen of the phone. However, more benchmarks with various characteristics such as I/O boundness and memory intensiveness will be added to the experiment.
+
 
 \subsection{Experiment Results}
 \subsection{Results Analysis}
@@ -83,6 +162,13 @@ In the following discussion, we describe different multi-threading styles that w
 \section{Discussion}
 
 \section{Related Work}
+Various studies have been carried out so far on mobile devices and their energy consumption patterns. In [1], overall energy consumption of a smartphone along with its breakdown on hardware is presented. Eprof, the first fine grained profiler is introduced in [2]. 
+Identify applicable sponsor/s here. If no sponsors, delete this text box (sponsors).
+A testing methodology is proposed in [3] in which significantly few number of tests are required to evaluate energy consumption of smartphones. Oliver et al [4] build an energy Emulation Toolkit that allows developers to evaluate the energy consumption requirements of their applications against real users’ energy traces. Authors in [5] address the challenges of energy analysis through a power metering toolkit called NEAT which incorporates inserting a small board into the smartphone.
+Powerlet, a battery interface, actively interacts with users to provide battery usage information [6]. Furthermore, authors in [7] present Dr. Swap, an energy efficient paging design to improve energy behavior of smartphones.
+On the other hand, some researchers have focused on single aspects of the devices trying to improve their energy consumption patterns. Among those, Nguyen [8] designs and implements an I/O tracking tool which dynamically changes storage configurations matching I/O patterns to decrease energy usage. Yan et al [9] study energy efficiency in cache design and propose a novel L2 cache design. The research of warty [10] focuses on 802.11n power consumption of smartphones.
+Nevertheless, we did not find any study exploring concurrent programming in cellphones.    
+
 
 \section{Future Work and Conclusion}
 
