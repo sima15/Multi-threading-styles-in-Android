@@ -17,6 +17,7 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     long startTime;
     int poolLength;
     EditText inputText;
+    long totalTime;
 
     byte[][] out;
     static AtomicInteger yCt;
@@ -40,42 +41,48 @@ public class MandelbrotForkJoin extends AppCompatActivity {
                 inputText = (EditText) findViewById(R.id.inputText);
                 N = Integer.parseInt(inputText.getText().toString());
 
-                Crb = new double[N + 7];
-                Cib = new double[N + 7];
-                double invN = 2.0 / N;
-                for (int i = 0; i < N; i++) {
-                    Cib[i] = i * invN - 1.0;
-                    Crb[i] = i * invN - 1.5;
-                }
-                yCt = new AtomicInteger();
-                out = new byte[N][(N + 7) / 8];
+                for(int i=0; i<800; i++)
+                    doJob();
 
-                int poolLength = 32;
-                for (int loopCount = 0; loopCount < 800; loopCount++) {
-                    MandelbrotTask task = new MandelbrotTask();
-                    forkJoinPool = new ForkJoinPool(poolLength);
-                    forkJoinPool.invoke(task);
-                }
-                forkJoinPool.shutdown();
-
-                try {
-                    forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
-                    if (forkJoinPool.isTerminated()) {
-                        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-                        for(int i=0;i<N;i++) System.out.println(out[i]);
-                        long endTime = System.currentTimeMillis();
-                        long totalTime = endTime - startTime;
-                        System.out.println("end time is: " + endTime);
-                        System.out.println("Total time is: " + totalTime);
-                        inputText.setText(String.valueOf(totalTime));
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                inputText.setText(String.valueOf(totalTime));
             }
         });
     }
 
+    public void doJob(){
+        Crb = new double[N + 7];
+        Cib = new double[N + 7];
+        double invN = 2.0 / N;
+        for (int i = 0; i < N; i++) {
+            Cib[i] = i * invN - 1.0;
+            Crb[i] = i * invN - 1.5;
+        }
+        yCt = new AtomicInteger();
+        out = new byte[N][(N + 7) / 8];
+
+        int poolLength = 32;
+//        for (int loopCount = 0; loopCount < 800; loopCount++) {
+            MandelbrotTask task = new MandelbrotTask();
+            forkJoinPool = new ForkJoinPool(poolLength);
+            forkJoinPool.invoke(task);
+//        }
+        forkJoinPool.shutdown();
+
+        try {
+            forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
+            if (forkJoinPool.isTerminated()) {
+                System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+                for(int i=0;i<N;i++) System.out.println(out[i]);
+                long endTime = System.currentTimeMillis();
+                totalTime = endTime - startTime;
+                System.out.println("end time is: " + endTime);
+                System.out.println("Total time is: " + totalTime);
+
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     static int getByte(int x, int y) {
         int res = 0;
         for (int i = 0; i < 8; i += 2) {
