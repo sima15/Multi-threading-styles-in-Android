@@ -3,9 +3,6 @@ package com.example.sima.mandelbrot.asynctask;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,7 +22,6 @@ public class MandelbrotAsynctask extends Activity {
     long endTime = startTime;
     long totalTime;
     int N;
-    EditText inputText;
     TextView resultText;
 
 
@@ -34,37 +30,28 @@ public class MandelbrotAsynctask extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot_asynctask);
 
-        Button submitButton = (Button) findViewById(R.id.submitButton);
-        inputText = (EditText) findViewById(R.id.inputText);
         resultText = (TextView) findViewById(R.id.resultText);
 
+        startTime = System.nanoTime();
+        System.out.println("start time is: " + startTime);
+        doJob();
 
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startTime = System.nanoTime();
-                System.out.println("start time is: " + startTime);
-
-                String inputStr = inputText.getText().toString();
-                N = Integer.parseInt(inputStr);
-
-                Crb = new double[N + 7];
-                Cib = new double[N + 7];
-                double invN = 2.0 / N;
-                for (int i = 0; i < N; i++) {
-                    Cib[i] = i * invN - 1.0;
-                    Crb[i] = i * invN - 1.5;
-                }
-                yCt = new AtomicInteger();
-                out = new byte[N][(N + 7) / 8];
-
-
-                    new MandelAsyncTask().execute();
-            }
-        });
     }
+        protected  void doJob(){
+            Crb = new double[N + 7];
+            Cib = new double[N + 7];
+            double invN = 2.0 / N;
+            for (int i = 0; i < N; i++) {
+                Cib[i] = i * invN - 1.0;
+                Crb[i] = i * invN - 1.5;
+            }
+            yCt = new AtomicInteger();
+            out = new byte[N][(N + 7) / 8];
 
 
+            new MandelAsyncTask().execute();
+
+        }
     class MandelAsyncTask extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
@@ -115,13 +102,8 @@ public class MandelbrotAsynctask extends Activity {
             return String.valueOf(totalTime);
         }
 
-//        Extension extension = new Extension();
         @Override
         protected void onPostExecute(String v) {
-//            super.onPostExecute();
-//            long endTime = System.nanoTime();
-//            double totalTime = (endTime - startTime)/1000000000.0;
-//            System.out.println("Total time is: " + totalTime);
             resultText.setText(String.valueOf(totalTime));
         }
     }
