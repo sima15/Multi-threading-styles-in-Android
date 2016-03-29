@@ -1,0 +1,5 @@
+projectKey=my:image2
+serverUrl=http://localhost:9000
+dashboardUrl=http://localhost:9000/dashboard/index/my:image2
+ceTaskId=AVO-pqyqKym_tpSsBfYD
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AVO-pqyqKym_tpSsBfYD

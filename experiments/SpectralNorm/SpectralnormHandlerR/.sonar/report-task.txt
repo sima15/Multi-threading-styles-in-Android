@@ -1,0 +1,5 @@
+projectKey=my:spect6
+serverUrl=http://localhost:9000
+dashboardUrl=http://localhost:9000/dashboard/index/my:spect6
+ceTaskId=AVPD9KgvaBHRaZLtDUYM
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AVPD9KgvaBHRaZLtDUYM

@@ -1,0 +1,5 @@
+projectKey=my:spect4
+serverUrl=http://localhost:9000
+dashboardUrl=http://localhost:9000/dashboard/index/my:spect4
+ceTaskId=AVPD7ggPaBHRaZLtDQrC
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AVPD7ggPaBHRaZLtDQrC
