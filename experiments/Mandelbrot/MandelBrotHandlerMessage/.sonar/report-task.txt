@@ -1,0 +1,5 @@
+projectKey=my:mandel5
+serverUrl=http://localhost:9000
+dashboardUrl=http://localhost:9000/dashboard/index/my:mandel5
+ceTaskId=AVPD2WT-aBHRaZLtDOGb
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AVPD2WT-aBHRaZLtDOGb
