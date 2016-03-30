@@ -1,26 +1,19 @@
 package com.example.assl_blue.dacapo_benchmark;
+
+
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.EditText;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- *
- * @author Sima Mehri
- */
-public class MandelbrotExecutor extends MBase {
+public class MandelbrotExplict extends MBase {
 
-    MandelbrotExecutor(int numThreads){
+    MandelbrotExplict(int numThreads){
         super(numThreads);
     }
 
-
-    @Override
     protected  void doJob(){
         Crb = new double[N + 7];
         Cib = new double[N + 7];
@@ -32,27 +25,39 @@ public class MandelbrotExecutor extends MBase {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        ExecutorService executor;
-
-        executor = Executors.newFixedThreadPool(numThread);
-        for (int i = 0; i < numThread; i++) {
-
-            executor.submit(new Runnable() {
-                    @Override
+        threads = new boolean[numThread];
+        pool = new Thread[numThread];
+        for (int i = 0; i < pool.length; i++) {
+            pool[i] = new Thread() {
+                    int temp =0;
                     public void run() {
-                        int y ;
+                        int y;
                         while ((y = yCt.getAndIncrement()) < out.length) {
                             putLine(y, out[y]);
                         }
+                        threads[temp] = true;
+                        synchronized (this) {
+                            notify();
+                        }
                     }
-                });
+
+                };
         }
-        executor.shutdown();
-        try {
-            executor.awaitTermination(500, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Log.e("Mbench", "exception", e);
+        for (int k=0; k<numThread; k++) {
+            pool[k].start();
         }
+
+        for (int k=0; k<numThread; k++) {
+            try{
+                if (pool[k].isAlive()) pool[k].join();
+            }catch (InterruptedException e){
+                Log.e("Mbench", "exception", e);
+            }
+        }
+
     }
 
 }
+
+
+

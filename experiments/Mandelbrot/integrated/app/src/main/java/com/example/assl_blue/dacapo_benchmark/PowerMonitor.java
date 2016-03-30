@@ -35,7 +35,7 @@ public class PowerMonitor {
                     con = (HttpURLConnection) url.openConnection();
                     Log.d("Power Monitoring", "Response Code : " + con.getResponseCode());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("Mbench", "exception", e);
                 }
             }
         }
@@ -54,7 +54,7 @@ public class PowerMonitor {
                 SystemClock.sleep(10000);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
         }
 
         return null;
@@ -70,7 +70,7 @@ public class PowerMonitor {
         try {
             sendRequest(baseUrl + "/start");
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
             return false;
         }
 
@@ -84,7 +84,7 @@ public class PowerMonitor {
         try {
             sendRequest(baseUrl + "/save");
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
             return false;
         }
 
@@ -98,7 +98,7 @@ public class PowerMonitor {
         try {
             sendRequest(baseUrl + "/stop/" + filename);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
             return false;
         }
 
@@ -119,7 +119,7 @@ public class PowerMonitor {
             TargetString = readStream(in);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
         }
 
         return TargetString;

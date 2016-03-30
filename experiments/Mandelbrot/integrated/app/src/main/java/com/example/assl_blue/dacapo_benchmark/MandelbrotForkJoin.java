@@ -2,6 +2,7 @@ package com.example.assl_blue.dacapo_benchmark;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.EditText;
 
 import java.util.concurrent.ForkJoinPool;
@@ -39,19 +40,15 @@ public class MandelbrotForkJoin extends MBase {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        int poolLength = 32;
         MandelbrotTask task = new MandelbrotTask();
-        forkJoinPool = new ForkJoinPool(poolLength);
+        forkJoinPool = new ForkJoinPool(numThread);
         forkJoinPool.invoke(task);
         forkJoinPool.shutdown();
 
         try {
             forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
-            if (forkJoinPool.isTerminated()) {
-                for(int i=0;i<N;i++) System.out.println(out[i]);
-            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
         }
     }
 
@@ -64,20 +61,16 @@ public class MandelbrotForkJoin extends MBase {
         public void compute() {
             if (index >= THRESHOLD) {
                 index--;
-                int y = 1;
-                byte res = 0;
-                for (int xb = 0; xb < out[y].length; xb++) {
-                    out[y][xb] = (byte) getByte(xb * 8, y);
-                    res = out[y][xb];
+
+                int y;
+                while ((y = yCt.getAndIncrement()) < out.length) {
+                    putLine(y, out[y]);
                 }
-                System.out.println("res is: "+String.valueOf(res));
 
                 MandelbrotTask worker = new MandelbrotTask();
                 worker.invoke();
             }
             else{
-
-
                 return;
             }
         }

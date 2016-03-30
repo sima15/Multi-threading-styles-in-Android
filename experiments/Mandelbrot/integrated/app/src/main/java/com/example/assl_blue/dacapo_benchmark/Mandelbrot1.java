@@ -10,13 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Mandelbrot1 extends AppCompatActivity {
 
-    long startTime;
-    long endTime = startTime;
-    long totalTime;
-    int repeatNum = 10;
+    int repeatNum = 50;
 
     public enum Style {
-        /*Explict,*/ ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
+        Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
     }
     
     @Override
@@ -24,9 +21,7 @@ public class Mandelbrot1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot1);
 
-        startTime = System.nanoTime();
-        System.out.println("start time is: " + startTime);
-        Style style = Style.Executor;
+
         localTest();
 
     }
@@ -37,24 +32,27 @@ public class Mandelbrot1 extends AppCompatActivity {
 
         for (Style style : Style.values()) {
             for (int numThreads : testThreads) {
-                Log.i("Local Test Start", String.format("Style : %s Number of Thread %d", style.toString(), numThreads));
                 startTest(style, numThreads);
-                Log.i("Local Test End", String.format("Style : %s Number of Thread %d", style.toString(), numThreads));
             }
 
         }
     }
 
     private void startTest(Style style, int numThreads){
+        long startTime;
+        Log.i("MBench Local Test Start", String.format("Style : %s Number of Thread %d", style.toString(), numThreads));
+        startTime = System.nanoTime();
+        Log.d("MBench Test start", "start time is: " + startTime);
         MBase c = getStyleClass(style, numThreads);
         c.doJob();
+        Log.d("MBench Test End", "end time is: " + startTime + " Duration" + (System.nanoTime() - startTime));
+        Log.i("MBench Local Test End", String.format("Style : %s Number of Thread %d", style.toString(), numThreads));
     }
 
     private MBase getStyleClass(Style style, int numThreads) {
         switch (style) {
-        /*case Explict:
-            new Ma();
-            break;*/
+        case Explict:
+            return new MandelbrotExplict(numThreads);
         case ForkJoin:
             return new MandelbrotForkJoin(numThreads);
         case AsyncTask:
@@ -94,7 +92,7 @@ public class Mandelbrot1 extends AppCompatActivity {
             }
 
 
-            Log.i("Thread Style Info", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
+            Log.i("MBench Info", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
 
 
             for (int j = 0; j < repeatNum; j++) {
@@ -104,32 +102,12 @@ public class Mandelbrot1 extends AppCompatActivity {
                 }
             }
 
-            powerMonitor.stopMonitoring(String.format("ImageBlur_%s_%d", style.name(), numThreads));
-            //SystemClock.sleep(1000);
+            powerMonitor.stopMonitoring(String.format("Mandelbrot_%s_%d", style.name(), numThreads));
+            SystemClock.sleep(1000);
         }
         powerMonitor.saveMonitoring();
 
     }
-    // @Override
-    // protected void onCreate(Bundle savedInstanceState) {
-    //     super.onCreate(savedInstanceState);
-    //     setContentView(R.layout.activity_mandelbrot1);
-
-    //     startTime = System.currentTimeMillis();
-    //     System.out.println("Start time is: " + startTime);
-    //     inputText = (EditText) findViewById(R.id.inputText);
-
-    //     for(int i=0; i<800; i++) doJob();
-
-    //     if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
-
-    //     if(mainThread) totalTime = endTime - startTime;
-    //     System.out.println("end time is: "+endTime);
-    //     System.out.println("Total time is: "+totalTime);
-    //     inputText.setText(String.valueOf(totalTime));
-    // }
-
-
     
 
 }

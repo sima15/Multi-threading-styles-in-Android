@@ -3,6 +3,7 @@ package com.example.assl_blue.dacapo_benchmark;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +38,7 @@ public class MandelbrotHandlerR extends MBase {
             t.start();
             t.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
         }
     }
 
@@ -64,7 +65,7 @@ public class MandelbrotHandlerR extends MBase {
                 try{
                     if (pool[k].isAlive()) pool[k].join();
                 }catch (InterruptedException e){
-                    e.printStackTrace();
+                    Log.e("Mbench", "exception", e);
                 }
             }
         }

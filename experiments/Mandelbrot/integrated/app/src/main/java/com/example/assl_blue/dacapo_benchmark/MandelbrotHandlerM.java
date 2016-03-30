@@ -3,6 +3,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.EditText;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +43,7 @@ public class MandelbrotHandlerM extends MBase {
         try {
             t1.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e("Mbench", "exception", e);
         }
     }
 
@@ -77,7 +78,7 @@ public class MandelbrotHandlerM extends MBase {
                         pool[k].join();
                     }
                 }catch (InterruptedException e){
-                    e.printStackTrace();
+                    Log.e("Mbench", "exception", e);
                 }
             }
 
