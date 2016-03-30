@@ -17,7 +17,7 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     EditText inputText;
     long totalTime;
 
-    byte[][] out;
+    static byte[][] out;
     static AtomicInteger yCt;
     static double[] Crb;
     static double[] Cib;
@@ -119,13 +119,11 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         public void compute() {
             if (index >= THRESHOLD) {
                 index--;
-                int y = 1;
-                byte res = 0;
-                for (int xb = 0; xb < out[y].length; xb++) {
-                    out[y][xb] = (byte) getByte(xb * 8, y);
-                    res = out[y][xb];
+
+                int y;
+                while ((y = yCt.getAndIncrement()) < out.length) {
+                    putLine(y, out[y]);
                 }
-                System.out.println("res is: "+String.valueOf(res));
 
                 MandelbrotTask worker = new MandelbrotTask();
                 worker.invoke();
@@ -136,5 +134,11 @@ public class MandelbrotForkJoin extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    static void putLine(int y, byte[] line) {
+        for (int xb = 0; xb < line.length; xb++)
+            line[xb] = (byte) getByte(xb * 8, y);
+
     }
 }

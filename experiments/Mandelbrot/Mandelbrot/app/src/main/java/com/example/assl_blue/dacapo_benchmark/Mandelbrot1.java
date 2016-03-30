@@ -55,7 +55,7 @@ public class Mandelbrot1 extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        poolLength = 1;
+        poolLength = 32;
         threads = new boolean[poolLength];
             pool = new Thread[poolLength];
             for (int i = 0; i < pool.length; i++) {
@@ -82,14 +82,14 @@ public class Mandelbrot1 extends AppCompatActivity {
         for (int k=0; k<poolLength; k++) {
             try{
                 if (pool[k].isAlive()) pool[k].join();
-                System.out.println("Waiting for thread " + k + " to complete");
+//                System.out.println("Waiting for thread " + k + " to complete");
             }catch (InterruptedException e){
                 e.printStackTrace();
             }
         }
 
-        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-        for(int i=0;i<N;i++) System.out.println(out[i]);
+//        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+//        for(int i=0;i<N;i++) System.out.println(out[i]);
 
     }
 
