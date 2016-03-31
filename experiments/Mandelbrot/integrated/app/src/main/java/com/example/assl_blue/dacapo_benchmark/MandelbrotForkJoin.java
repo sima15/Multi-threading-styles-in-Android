@@ -16,31 +16,18 @@ public class MandelbrotForkJoin extends MBase {
     ForkJoinPool forkJoinPool;
 
 
-    int index ;
     MandelbrotForkJoin(){
         super();
-        index = numThread;
     }
 
     MandelbrotForkJoin(int numThread){
         super(numThread);
-        index = numThread;
     }
 
 
     @Override
     public void doJob(){
-        Crb = new double[N + 7];
-        Cib = new double[N + 7];
-        double invN = 2.0 / N;
-        for (int i = 0; i < N; i++) {
-            Cib[i] = i * invN - 1.0;
-            Crb[i] = i * invN - 1.5;
-        }
-        yCt = new AtomicInteger();
-        out = new byte[N][(N + 7) / 8];
-
-        MandelbrotTask task = new MandelbrotTask();
+        MandelbrotTask task = new MandelbrotTask(numThread);
         forkJoinPool = new ForkJoinPool(numThread);
         forkJoinPool.invoke(task);
         forkJoinPool.shutdown();
@@ -52,27 +39,27 @@ public class MandelbrotForkJoin extends MBase {
         }
     }
 
+
     public class MandelbrotTask extends RecursiveAction {
         private static  final long serialVersionUID = 6136927121059165206L;
 
         private final  int THRESHOLD = 0;
 
+        private int count = 0;
+
+        MandelbrotTask(int cnt){
+            super();
+            count = cnt;
+        }
+
         @Override
         public void compute() {
-            if (index >= THRESHOLD) {
-                index--;
-
-                int y;
-                while ((y = yCt.getAndIncrement()) < out.length) {
-                    putLine(y, out[y]);
-                }
-
-                MandelbrotTask worker = new MandelbrotTask();
-                worker.invoke();
-            }
-            else{
+            if(count <= 1) {
+                doTask();
                 return;
             }
+            invokeAll(new MandelbrotTask(count/2),
+                    new MandelbrotTask(count/2));
         }
     }
 }

@@ -28,16 +28,6 @@ public class MandelbrotHandlerM extends MBase {
 
     @Override
     protected  void doJob(){
-        Crb = new double[N + 7];
-        Cib = new double[N + 7];
-        double invN = 2.0 / N;
-        for (int i = 0; i < N; i++) {
-            Cib[i] = i * invN - 1.0;
-            Crb[i] = i * invN - 1.5;
-        }
-        yCt = new AtomicInteger();
-        out = new byte[N][(N + 7) / 8];
-
         Thread t1 = new Thread(new MandelBrotMsgHnd(handler));
         t1.start();
         try {
@@ -61,10 +51,7 @@ public class MandelbrotHandlerM extends MBase {
             for (int j = 0; j < pool.length; j++) {
                 pool[j] = new Thread() {
                         public void run() {
-                            int y;
-                            while ((y = yCt.getAndIncrement()) < out.length) {
-                                putLine(y, out[y]);
-                            }
+                            doTask();
                         }
                     };
             }

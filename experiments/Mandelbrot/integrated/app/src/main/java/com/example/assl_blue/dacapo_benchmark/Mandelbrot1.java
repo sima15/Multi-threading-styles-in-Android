@@ -21,7 +21,7 @@ public class Mandelbrot1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot1);
 
-
+        //startTest(Style.ForkJoin,4);
         localTest();
 
     }

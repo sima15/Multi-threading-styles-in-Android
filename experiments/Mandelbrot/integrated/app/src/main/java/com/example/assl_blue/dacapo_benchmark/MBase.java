@@ -26,10 +26,33 @@ public class MBase {
     int numThread;
 
     MBase(int numThread){
+        super();
+        init();
         this.numThread= numThread;
     }
 
-    MBase(){};
+    MBase(){
+        init();
+    };
+
+    void init(){
+        Crb = new double[N + 7];
+        Cib = new double[N + 7];
+        double invN = 2.0 / N;
+        for (int i = 0; i < N; i++) {
+            Cib[i] = i * invN - 1.0;
+            Crb[i] = i * invN - 1.5;
+        }
+        yCt = new AtomicInteger();
+        out = new byte[N][(N + 7) / 8];
+    };
+
+    protected  void doTask(){
+        int y;
+        while ((y = yCt.getAndIncrement()) < out.length) {
+            putLine(y, out[y]);
+        }
+    }
 
     protected  void doJob(){};
         

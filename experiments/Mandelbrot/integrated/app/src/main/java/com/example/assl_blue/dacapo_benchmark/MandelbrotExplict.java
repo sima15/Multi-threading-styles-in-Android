@@ -15,15 +15,6 @@ public class MandelbrotExplict extends MBase {
     }
 
     protected  void doJob(){
-        Crb = new double[N + 7];
-        Cib = new double[N + 7];
-        double invN = 2.0 / N;
-        for (int i = 0; i < N; i++) {
-            Cib[i] = i * invN - 1.0;
-            Crb[i] = i * invN - 1.5;
-        }
-        yCt = new AtomicInteger();
-        out = new byte[N][(N + 7) / 8];
 
         threads = new boolean[numThread];
         pool = new Thread[numThread];
@@ -31,10 +22,7 @@ public class MandelbrotExplict extends MBase {
             pool[i] = new Thread() {
                     int temp =0;
                     public void run() {
-                        int y;
-                        while ((y = yCt.getAndIncrement()) < out.length) {
-                            putLine(y, out[y]);
-                        }
+                        doTask();
                         threads[temp] = true;
                         synchronized (this) {
                             notify();
