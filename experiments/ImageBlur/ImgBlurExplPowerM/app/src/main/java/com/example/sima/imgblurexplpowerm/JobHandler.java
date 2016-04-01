@@ -18,9 +18,6 @@ public class JobHandler extends Thread {
     }
 
     public void run() {
-        Log.i("INFO", "No of threads: " + mainActivity.numThreads);
-
-
         mainActivity.splitImage();
         pool = new Worker[mainActivity.numThreads];
 
@@ -36,7 +33,7 @@ public class JobHandler extends Thread {
                 try {
                     mainActivity.lock1.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("IBench", "exception", e);
                 }
             }
         }

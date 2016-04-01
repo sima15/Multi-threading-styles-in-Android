@@ -6,9 +6,11 @@ import android.util.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,14 +21,33 @@ import java.net.URL;
 public class PowerMonitor {
     static boolean usePowerMonitor = true;
     static String baseUrl = "http://129.123.7.34:8000";
+    RandomAccessFile reader;
+    String load;
+    String[] toks;
+    long cpu1, cpu2, idle1, idle2;
+    long sTime, eTime;
 
-    PowerMonitor() {};
+    PowerMonitor() {
+        try {
+            reader = new RandomAccessFile("/proc/stat", "r");
+
+        } catch (Exception e) {
+            Log.e("Proc Exception", "", e);
+        }
 
 
-    private HttpURLConnection sendRequest(final String apiUrl){
+    }
 
-        class RequestThread extends Thread{
+    ;
+
+
+    private String sendRequest(final String apiUrl) {
+
+
+        class RequestThread extends Thread {
             public HttpURLConnection con;
+            String body;
+
             @Override
             public void run() {
                 try {
@@ -34,43 +55,48 @@ public class PowerMonitor {
                     Log.d("Power Monitoring", "Sending request to URL : " + url);
                     con = (HttpURLConnection) url.openConnection();
                     Log.d("Power Monitoring", "Response Code : " + con.getResponseCode());
+
+                    InputStream in = new BufferedInputStream(con.getInputStream());
+                    body = readStream(in);
+
                 } catch (Exception e) {
-                    Log.e("Mbench", "exception", e);
+                    Log.e("Power Monitoring", "exception", e);
                 }
             }
         }
 
 
         try {
-            while(true) {
+            while (true) {
                 RequestThread thread = new RequestThread();
                 thread.start();
                 thread.join();
 
-                if (thread.con.getResponseCode() == 200){
-                    return thread.con;
+                if (thread.con.getResponseCode() == 200) {
+                    return thread.body;
                 }
                 Log.d("Power Monitoring", "Power Monitor have a Problem Waiting 30 sec");
                 SystemClock.sleep(10000);
             }
         } catch (Exception e) {
-            Log.e("Mbench", "exception", e);
+            Log.e("Power Monitoring", "exception", e);
         }
 
         return null;
     }
+
     public void setBaseUrl(String url) {
         baseUrl = url;
     }
 
-    public boolean  startMonitoring() {
+    public boolean startMonitoring() {
         Log.i("Power Monitoring", "Power Monitor start");
         if (!usePowerMonitor) return true;
 
         try {
             sendRequest(baseUrl + "/start");
         } catch (Exception e) {
-            Log.e("Mbench", "exception", e);
+            Log.e("Power Monitoring", "exception", e);
             return false;
         }
 
@@ -82,9 +108,9 @@ public class PowerMonitor {
         if (!usePowerMonitor) return true;
 
         try {
-            sendRequest(baseUrl + "/save");
+            sendRequest(baseUrl + "/save/");
         } catch (Exception e) {
-            Log.e("Mbench", "exception", e);
+            Log.e("Power Monitoring", "exception", e);
             return false;
         }
 
@@ -92,13 +118,15 @@ public class PowerMonitor {
     }
 
     public boolean stopMonitoring(String filename) {
-        Log.i("Power Monitoring", "Power Monitor stop : " + filename);
+        long duration = eTime-sTime;
+        String postfix = String.format("_%d_%d_%d", duration, cpu1, cpu2);
+        Log.i("Power Monitoring", "Power Monitor stop : " + filename + postfix);
         if (!usePowerMonitor) return true;
 
         try {
-            sendRequest(baseUrl + "/stop/" + filename);
+            sendRequest(baseUrl + "/stop/" + filename + postfix);
         } catch (Exception e) {
-            Log.e("Mbench", "exception", e);
+            Log.e("Power Monitoring", "exception", e);
             return false;
         }
 
@@ -108,21 +136,50 @@ public class PowerMonitor {
     public String getTarget() {
         Log.i("Power Monitoring", "Trying to get target");
 
-        String TargetString = "";
-
-        if (!usePowerMonitor) return TargetString;
+        String body = "";
+        if (!usePowerMonitor) return "";
 
         try {
-            HttpURLConnection con = sendRequest(baseUrl + "/target");
-
-            InputStream in = new BufferedInputStream(con.getInputStream());
-            TargetString = readStream(in);
+            body =   sendRequest(baseUrl + "/target");
 
         } catch (Exception e) {
-            Log.e("Mbench", "exception", e);
+            Log.e("Power Monitoring", "exception", e);
+        }
+        return body;
+    }
+
+    public void readFirstUsage() {
+        try {
+            reader.seek(0);
+            load = reader.readLine();
+            toks = load.split(" ");
+            idle1 = Long.parseLong(toks[5]);
+            cpu1 = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
+                    + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+            sTime = System.currentTimeMillis();
+        } catch (Exception e) {
+            Log.e("Proc Exception", "", e);
         }
 
-        return TargetString;
+    }
+
+    public float getUsage() {
+        return (float) (cpu2 - cpu1) / ((cpu2 + idle2) - (cpu1 + idle1));
+    }
+
+    public void readLastUsage() {
+        try {
+            reader.seek(0);
+            load = reader.readLine();
+            toks = load.split(" ");
+
+            idle2 = Long.parseLong(toks[5]);
+            cpu2 = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
+                    + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+            eTime = System.currentTimeMillis();
+        } catch (Exception e) {
+            Log.e("Proc Exception", "", e);
+        }
     }
 
     private String readStream(InputStream is) {
@@ -133,8 +190,10 @@ public class PowerMonitor {
                 bo.write(i);
                 i = is.read();
             }
+
             return bo.toString();
         } catch (Exception e) {
+            Log.e("Power Monitroing", "Read Stream", e);
             return "";
         }
     }

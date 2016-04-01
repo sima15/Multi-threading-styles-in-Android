@@ -2,6 +2,7 @@ package com.example.sima.imgblurexplpowerm;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +38,7 @@ class ExecutorBlur implements Runnable {
         try {
             pool.awaitTermination(500, TimeUnit.SECONDS);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("IBench", "exception", e);
         }
         for (int j = 0; j < numThreads; j++) {
             mainActivity.copyPartToPlaceholder(mainActivity.bmpArray[j], j);

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
+import android.util.Log;
 
 /**
  * Created by daehyeok on 2016. 3. 22..
@@ -47,7 +48,7 @@ class AsyncTaskBlur extends AsyncTask<Void, Void, Void> {
                 try {
                     mainActivity.lock1.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("IBench", "exception", e);
                 }
             }
         }
