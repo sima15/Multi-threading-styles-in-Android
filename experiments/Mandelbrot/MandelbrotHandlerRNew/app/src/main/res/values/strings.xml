@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MandelbrotHandlerRNew</string>
+    <string name="resultText">Result</string>
+</resources>

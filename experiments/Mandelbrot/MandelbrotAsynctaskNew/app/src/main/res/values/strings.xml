@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MandelbrotAsynctaskNew</string>
+    <string name="resultText">Result</string>
+</resources>
