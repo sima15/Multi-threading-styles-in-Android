@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     Object lock1 = new Object();
     TextView view;
     public int repeatNum = 50;
+
     public enum Style {
         Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
     }
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         return placeholderObj;
     }
 
-    public  void splitImage() {
+    public void splitImage() {
         pieceWidth = w / numThreads;
         for (int i = 0; i < bmpArray.length; i++) {
             bmpArray[i] = Bitmap.createBitmap(bitmap, i * pieceWidth, 0, pieceWidth, h);
@@ -102,11 +103,45 @@ public class MainActivity extends AppCompatActivity {
         layout.setBackground(new BitmapDrawable(dest));
     }
 
+    boolean AsyncCheckDone(AsyncTaskBlur[] asyncTasks )  {
+        for (AsyncTaskBlur a : asyncTasks) {
+            if (!a.bluer.done)
+                return false;
+        }
+        return true;
+    }
+
     private void startAsyncTask() {
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
-        AsyncTaskBlur task = new AsyncTaskBlur(this);
-        task.execute();
+        bmpArray = new Bitmap[numThreads];
+        splitImage();
 
+        AsyncTaskBlur[] asyncTasks = new AsyncTaskBlur[numThreads];
+        for
+                (int j = 0; j < numThreads; j++) {
+            asyncTasks[j] = new AsyncTaskBlur(this, pieceWidth, h, j, bmpArray[j]);
+            asyncTasks[j].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+
+
+        synchronized (lock1) {
+            while (!AsyncCheckDone(asyncTasks)) {
+                try {
+                    lock1.wait();
+                } catch (InterruptedException e) {
+                    Log.e("IBench", "exception", e);
+                }
+            }
+        }
+
+
+        Bitmap placeholder = createPlaceholder();
+        canvas = new Canvas(placeholder);
+        for (int i = 0; i < numThreads; i++) {
+            copyPartToPlaceholder(bmpArray[i], i);
+        }
+
+        layout.setBackground(new BitmapDrawable(placeholder));
     }
 
     private void startExecutor() {
@@ -164,19 +199,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         startWithPM();
-
+        //localTest();
     }
 
-    private void localTest(){
-        int[] testThreads = new int[] {2,4, 8};
+    private void localTest() {
+        int[] testThreads = new int[]{2, 4, 8, 16, 32, 64};
         repeatNum = 5;
         for (Style s : Style.values()) {
             for (int n : testThreads) {
                 numThreads = n;
-                style = s;
-
                 Log.i("IBench", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
-                startTest();
+                for (int j = 0; j < repeatNum; j++) {
+                    startTest();
+                }
 
                 Log.i("IBench", String.format("Test End Style: %s Thread : %d", style.name(), numThreads));
             }
@@ -184,10 +219,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void startWithPM(){
+    private void startWithPM() {
 
         PowerMonitor powerMonitor = new PowerMonitor();
-       powerMonitor.startMonitoring();
+        powerMonitor.startMonitoring();
         while (true) {
             String targetString = powerMonitor.getTarget();
 
@@ -195,11 +230,11 @@ public class MainActivity extends AppCompatActivity {
 
             String[] target = targetString.split(" ");
 
-            try{
+            try {
                 style = Style.valueOf(target[0]);
                 numThreads = Integer.parseInt(target[1]);
-            }catch (Exception e){
-                Log.d("IBench", String.format("Erro during parse String %s, Style : %s ", targetString, target[0]) );
+            } catch (Exception e) {
+                Log.d("IBench", String.format("Erro during parse String %s, Style : %s ", targetString, target[0]));
                 Log.e("IBench", "Style Parsing Error", e);
                 SystemClock.sleep(10000);
                 continue;
@@ -215,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             powerMonitor.stopMonitoring(String.format("ImageBlur_%s_%d", style.name(), numThreads));
-            SystemClock.sleep(1000);
+            SystemClock.sleep(10000);
         }
         powerMonitor.saveMonitoring();
     }

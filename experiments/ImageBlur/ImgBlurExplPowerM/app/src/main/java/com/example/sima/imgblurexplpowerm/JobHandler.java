@@ -21,7 +21,6 @@ public class JobHandler extends Thread {
         mainActivity.splitImage();
         pool = new Worker[mainActivity.numThreads];
 
-        Worker.mainActivity = (mainActivity);
 
         for (int i = 0; i < mainActivity.numThreads; i++) {
             pool[i] = new Worker(mainActivity, mainActivity.pieceWidth, mainActivity.h, i, mainActivity.bmpArray[i]);
@@ -48,7 +47,7 @@ public class JobHandler extends Thread {
 
     boolean checkDone() {
         for (Worker a : pool) {
-            if (!a.done) return false;
+            if (!a.bluer.done) return false;
         }
         return true;
     }

@@ -46,7 +46,7 @@ public class HandlerR implements Runnable {
 
     boolean checkDone() {
         for (Worker a : pool) {
-            if (!a.done) return false;
+            if (!a.bluer.done) return false;
         }
         return true;
     }
