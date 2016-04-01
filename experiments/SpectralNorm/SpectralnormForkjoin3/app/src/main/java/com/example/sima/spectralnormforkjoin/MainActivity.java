@@ -15,10 +15,10 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     long startTime;
-    int numThread = 4;
+    int numThread = 1;
     ForkJoinPool pool;
     Approximate[] threads;
-    int appIndex = 5;
+    static int appIndex = 20;
 
     int range;
     double m_vBv = 0, m_vv = 0;
@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
             int r2 = (i < (numThread - 1)) ? r1 + chunk : n;
 
             threads[i] = new Approximate(u, v, tmp, r1, r2);
-//            future = pool.submit(threads[i]);
             pool.submit(threads[i]);
             range += r2 - r1;
         }
@@ -101,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         //        public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend, double num1, double num2) {
         public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend) {
 
-//            super();
+            super();
 
             _u = u;
             _v = v;
@@ -111,29 +110,25 @@ public class MainActivity extends AppCompatActivity {
             range_end = rend;
         }
 
-        public Approximate(double[] v, double[] tmp, int r1, int r2) {
+        public Approximate(double[] v, double[] tmp, double[] u, int r1, int r2, int num) {
 
             try {
+                range_begin = r1;
+                range_end = r2;
+
+                _u = u;
+                _v = v;
+                _tmp = tmp;
+
                 MultiplyAv(v, tmp);
-                range_begin = r1;
-                range_end = r2;
+                MultiplyAtv( tmp, u);
+
+                MultiplyAv(u, tmp);
+                MultiplyAtv( tmp, v);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-//            MultiplyAtAv( u,v, tmp);
-//            MultiplyAtAv( _v, _tmp, _u);
-        }
-
-        public Approximate(double[] v, double[] tmp, int r1, int r2, int atv) {
-            try {
-                MultiplyAtv(v, tmp);
-
-                range_begin = r1;
-                range_end = r2;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
 
 
@@ -183,70 +178,78 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void compute () {
-                if (appIndex >= THRESHOLD) {
+                if (appIndex > THRESHOLD) {
                     appIndex--;
-                    Approximate ap11 = new Approximate(_tmp, _v, range_begin, range_end);
-                    Approximate ap12 = new Approximate(_tmp, _v, range_begin, range_end);
-                    Approximate ap13 = new Approximate(_tmp, _v, range_begin, range_end);
-                    Approximate ap14 = new Approximate(_tmp, _v, range_begin, range_end);
+                    System.out.println("Index is: " + (appIndex+1));
+                    Approximate ap11 = new Approximate(_u, _tmp, _v, range_begin, range_end, 10);
+                    Approximate ap21 = new Approximate(_v, _tmp, _u, range_begin, range_end, 10);
+//                    Approximate ap12 = new Approximate(_u, _tmp, range_begin, range_end);
+//                    Approximate ap13 = new Approximate(_u, _tmp, range_begin, range_end);
+//                    Approximate ap14 = new Approximate(_u, _tmp, range_begin, range_end);
 
-                    ap11.fork();
-                    ap12.fork();
-                    ap13.fork();
-                    ap14.fork();
+                    invokeAll(ap11, ap21);
+//                    ap11.invoke();
+//                    ap12.fork();
+//                    ap13.fork();
+//                    ap14.fork();
 
-                    System.out.println("Index is: " + appIndex);
+//                    Approximate ap31 = new Approximate(_tmp, _v, range_begin, range_end, 5);
+//                    Approximate ap32 = new Approximate(_tmp, _v, range_begin, range_end, 5);
+//                    Approximate ap33 = new Approximate(_tmp, _v, range_begin, range_end, 5);
+//                    Approximate ap34 = new Approximate(_tmp, _v, range_begin, range_end, 5);
 
-                    Approximate ap21 = new Approximate(_tmp, _u, range_begin, range_end);
-                    Approximate ap22 = new Approximate(_tmp, _u, range_begin, range_end);
-                    Approximate ap23 = new Approximate(_tmp, _u, range_begin, range_end);
-                    Approximate ap24 = new Approximate(_tmp, _u, range_begin, range_end);
+//                    ap31.invoke();
+//                    ap32.fork();
+//                    ap33.fork();
+//                    ap34.fork();
 
-                    ap21.fork();
-                    ap22.fork();
-                    ap23.fork();
-                    ap24.fork();
+//                    ap11.join();
+//                    ap31.join();
+
+
+
+//                    Approximate ap21 = new Approximate(_v, _tmp, _u, range_begin, range_end);
+//                    Approximate ap22 = new Approximate(_v, _tmp, range_begin, range_end);
+//                    Approximate ap23 = new Approximate(_v, _tmp, range_begin, range_end);
+//                    Approximate ap24 = new Approximate(_v, _tmp, range_begin, range_end);
+
+//                    ap21.invoke();
+//                    ap22.fork();
+//                    ap23.fork();
+//                    ap24.fork();
 
 //                Approximate ap2 = new Approximate(_v, _tmp, _u);
-                    Approximate ap31 = new Approximate(_u, _tmp, range_begin, range_end, 5);
-                    Approximate ap32 = new Approximate(_u, _tmp, range_begin, range_end, 5);
-                    Approximate ap33 = new Approximate(_u, _tmp, range_begin, range_end, 5);
-                    Approximate ap34 = new Approximate(_u, _tmp, range_begin, range_end, 5);
 
-                    ap31.fork();
-                    ap32.fork();
-                    ap33.fork();
-                    ap34.fork();
 
-                    Approximate ap41 = new Approximate(_v, _tmp, range_begin, range_end, 5);
-                    Approximate ap42 = new Approximate(_v, _tmp, range_begin, range_end, 5);
-                    Approximate ap43 = new Approximate(_v, _tmp, range_begin, range_end, 5);
-                    Approximate ap44 = new Approximate(_v, _tmp, range_begin, range_end, 5);
+//                    Approximate ap41 = new Approximate( _tmp, _u,  range_begin, range_end, 5);
+//                    Approximate ap42 = new Approximate( _tmp, _u,  range_begin, range_end, 5);
+//                    Approximate ap43 = new Approximate( _tmp, _u,  range_begin, range_end, 5);
+//                    Approximate ap44 = new Approximate( _tmp, _u,  range_begin, range_end, 5);
 
-                    ap41.fork();
-                    ap42.fork();
-                    ap43.fork();
-                    ap44.fork();
+//                    ap41.invoke();
+//                    ap42.fork();
+//                    ap43.fork();
+//                    ap44.fork();
 
-                    ap11.join();
-                    ap12.join();
-                    ap13.join();
-                    ap14.join();
+//                    ap11.join();
+//                    ap12.join();
+//                    ap13.join();
+//                    ap14.join();
 
-                    ap21.join();
-                    ap22.join();
-                    ap23.join();
-                    ap24.join();
+//                    ap21.join();
+//                    ap22.join();
+//                    ap23.join();
+//                    ap24.join();
 
-                    ap31.join();
-                    ap32.join();
-                    ap33.join();
-                    ap34.join();
+//                    ap31.join();
+//                    ap32.join();
+//                    ap33.join();
+//                    ap34.join();
 
-                    ap41.join();
-                    ap42.join();
-                    ap43.join();
-                    ap44.join();
+//                    ap41.join();
+//                    ap42.join();
+//                    ap43.join();
+//                    ap44.join();
                 } else {
                     return;
                 }
