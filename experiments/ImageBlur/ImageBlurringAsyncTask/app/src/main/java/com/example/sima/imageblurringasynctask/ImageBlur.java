@@ -60,7 +60,7 @@ public class ImageBlur extends AppCompatActivity {
         System.out.println("Start time: " + String.valueOf(startTime));
         layout = (LinearLayout) findViewById(R.id.layout);
 
-        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
+        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/rose-06.jpg";
         orgBitmap = BitmapFactory.decodeFile(bitmapPath);
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
 
@@ -82,8 +82,15 @@ public class ImageBlur extends AppCompatActivity {
                     pool[j] = new Worker(pieceWidth, h, j, bmpArray[j]);
                     pool[j].start();
                 }
+                for (int k=0; k<numThreads; k++) {
+                    try{
+                        if (pool[k].isAlive()) pool[k].join();
+                        System.out.println("Waiting for thread " + k + " to complete");
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
             }
-//            pool.shutdown();
             return null;
         }
 
