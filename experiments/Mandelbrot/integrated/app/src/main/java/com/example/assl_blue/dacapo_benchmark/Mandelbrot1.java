@@ -79,14 +79,13 @@ public class Mandelbrot1 extends AppCompatActivity {
             if (targetString.equalsIgnoreCase("Done")) break;
 
             String[] target = targetString.split(" ");
-            numThreads = Integer.parseInt(target[1]);
 
             try{
                 style = Style.valueOf(target[0]);
-                startTest(style, numThreads);
+                numThreads = Integer.parseInt(target[1]);
             }catch (Exception e){
-                Log.d("Parsing Error", targetString);
-                Log.d("Parsing Error", e.getMessage());
+                Log.d("MBench", "Parsing Error " + target);
+                Log.e("MBench", "Parsing Error", e);
                 SystemClock.sleep(10000);
                 continue;
             }
@@ -94,13 +93,11 @@ public class Mandelbrot1 extends AppCompatActivity {
 
             Log.i("MBench Info", String.format("Test Start Style: %s Thread : %d", style.name(), numThreads));
 
-
+            powerMonitor.readFirstUsage();
             for (int j = 0; j < repeatNum; j++) {
-
-                if(style.equals(Style.AsyncTask)){
-                    break;
-                }
+                startTest(style, numThreads);
             }
+            powerMonitor.readLastUsage();
 
             powerMonitor.stopMonitoring(String.format("Mandelbrot_%s_%d", style.name(), numThreads));
             SystemClock.sleep(1000);

@@ -17,10 +17,6 @@ class Explicit extends Thread {
     }
 
     public void run() {
-        Log.i("INFO", String.format("Start Test with Explicit Style with Thrad %d ", mainActivity.numThreads));
-        URL startMonsoon = null;
-
-
         try {
             mainActivity.bmpArray = new Bitmap[mainActivity.numThreads];
             mainActivity.startTime = System.currentTimeMillis();
@@ -30,12 +26,10 @@ class Explicit extends Thread {
             hndlr.join();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("IBench", "exception", e);
         }
 
         mainActivity.duration = System.currentTimeMillis() - mainActivity.startTime;
         mainActivity.view.setText(String.valueOf(mainActivity.duration));
-
-        Log.i("INFO", "Test finished");
     }
 }

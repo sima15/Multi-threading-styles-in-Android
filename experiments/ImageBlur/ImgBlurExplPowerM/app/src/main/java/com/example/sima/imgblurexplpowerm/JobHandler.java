@@ -18,13 +18,9 @@ public class JobHandler extends Thread {
     }
 
     public void run() {
-        Log.i("INFO", "No of threads: " + mainActivity.numThreads);
-
-
         mainActivity.splitImage();
         pool = new Worker[mainActivity.numThreads];
 
-        Worker.mainActivity = (mainActivity);
 
         for (int i = 0; i < mainActivity.numThreads; i++) {
             pool[i] = new Worker(mainActivity, mainActivity.pieceWidth, mainActivity.h, i, mainActivity.bmpArray[i]);
@@ -36,7 +32,7 @@ public class JobHandler extends Thread {
                 try {
                     mainActivity.lock1.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("IBench", "exception", e);
                 }
             }
         }
@@ -51,7 +47,7 @@ public class JobHandler extends Thread {
 
     boolean checkDone() {
         for (Worker a : pool) {
-            if (!a.done) return false;
+            if (!a.bluer.done) return false;
         }
         return true;
     }

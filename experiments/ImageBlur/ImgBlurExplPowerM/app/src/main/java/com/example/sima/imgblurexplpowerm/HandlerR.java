@@ -2,6 +2,7 @@ package com.example.sima.imgblurexplpowerm;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 /**
  * Created by daehyeok on 2016. 3. 22..
@@ -32,7 +33,7 @@ public class HandlerR implements Runnable {
                 try {
                     mainActivity.lock1.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("IBench", "exception", e);
                 }
             }
         }
@@ -45,7 +46,7 @@ public class HandlerR implements Runnable {
 
     boolean checkDone() {
         for (Worker a : pool) {
-            if (!a.done) return false;
+            if (!a.bluer.done) return false;
         }
         return true;
     }

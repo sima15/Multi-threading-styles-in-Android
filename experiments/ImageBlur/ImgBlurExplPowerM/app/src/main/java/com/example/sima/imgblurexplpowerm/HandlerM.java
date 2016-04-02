@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 
 /**
  * Created by daehyeok on 2016. 3. 23..
@@ -41,7 +42,7 @@ public class HandlerM implements Runnable {
                 try {
                     mainActivity.lock1.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("IBench", "exception", e);
                 }
             }
         }
@@ -56,7 +57,7 @@ public class HandlerM implements Runnable {
 
     boolean checkDone() {
         for (Worker a : pool) {
-            if (!a.done) return false;
+            if (!a.bluer.done) return false;
         }
         return true;
     }

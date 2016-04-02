@@ -13,7 +13,6 @@ public class MandelbrotForkJoin extends AppCompatActivity {
 
     int N = 500;
     long startTime;
-    int poolLength;
     EditText inputText;
     long totalTime;
 
@@ -23,7 +22,6 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     static double[] Cib;
 
     ForkJoinPool forkJoinPool;
-    int index = poolLength;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +33,7 @@ public class MandelbrotForkJoin extends AppCompatActivity {
                 inputText = (EditText) findViewById(R.id.inputText);
 
 
-                for(int i=0; i<800; i++)
+                for(int i=0; i<80; i++)
                     doJob();
 
                 inputText.setText(String.valueOf(totalTime));
@@ -53,16 +51,20 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        int poolLength = 32;
-            MandelbrotTask task = new MandelbrotTask();
-            forkJoinPool = new ForkJoinPool(poolLength);
-            forkJoinPool.invoke(task);
+        int poolLength = 8;
+
+        MandelbrotTask task = new MandelbrotTask(0, out.length);
+
+
+        forkJoinPool = new ForkJoinPool(poolLength);
+        forkJoinPool.invoke(task);
         forkJoinPool.shutdown();
 
         try {
             forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
             if (forkJoinPool.isTerminated()) {
-                System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+
+                System.out.println(("P4\n" + N + " " + N + "\n").getBytes());
                 for(int i=0;i<N;i++) System.out.println(out[i]);
                 long endTime = System.currentTimeMillis();
                 totalTime = endTime - startTime;
@@ -113,32 +115,48 @@ public class MandelbrotForkJoin extends AppCompatActivity {
     public class MandelbrotTask extends RecursiveAction {
         private static  final long serialVersionUID = 6136927121059165206L;
 
-        private final  int THRESHOLD = 0;
+        private final  int THRESHOLD = 50;
+        int upperBound;
+        int lowerBound;
+        int y;
+        int range;
+
+        public MandelbrotTask(int a, int b){
+            lowerBound = a;
+            upperBound = b;
+             range = b -a;
+        }
+
+
+
+        protected  void computeDirectly(int a , int b){
+
+            yCt.set(a);
+            while ((y = yCt.getAndIncrement()) < b) {
+                putLine(y, out[y]);
+            }
+        }
 
         @Override
         public void compute() {
-            if (index >= THRESHOLD) {
-                index--;
 
-                int y;
-                while ((y = yCt.getAndIncrement()) < out.length) {
-                    putLine(y, out[y]);
-                }
-
-                MandelbrotTask worker = new MandelbrotTask();
-                worker.invoke();
+            if ((upperBound-lowerBound) < THRESHOLD) {
+                computeDirectly(lowerBound, upperBound);
+                return;
             }
             else{
+                int middle = lowerBound + (upperBound-lowerBound)/2;
+                MandelbrotTask worker1 = new MandelbrotTask(lowerBound, middle);
+                MandelbrotTask worker2 = new MandelbrotTask(middle+1, upperBound);
+                invokeAll(worker1, worker2);
 
-
-                return;
             }
         }
     }
 
     static void putLine(int y, byte[] line) {
-        for (int xb = 0; xb < line.length; xb++)
+        for (int xb = 0; xb < line.length; xb++) {
             line[xb] = (byte) getByte(xb * 8, y);
-
+        }
     }
 }
