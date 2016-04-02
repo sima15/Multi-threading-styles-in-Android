@@ -1,14 +1,10 @@
 package com.example.assl_blue.dacapo_benchmark;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.EditText;
 
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MandelbrotForkJoin extends MBase {
 
@@ -27,7 +23,7 @@ public class MandelbrotForkJoin extends MBase {
 
     @Override
     public void doJob(){
-        MandelbrotTask task = new MandelbrotTask(numThread);
+        MandelbrotTask task = new MandelbrotTask(0, out.length);
         forkJoinPool = new ForkJoinPool(numThread);
         forkJoinPool.invoke(task);
         forkJoinPool.shutdown();
@@ -42,24 +38,34 @@ public class MandelbrotForkJoin extends MBase {
 
     public class MandelbrotTask extends RecursiveAction {
         private static  final long serialVersionUID = 6136927121059165206L;
+        private final  int THRESHOLD = 50;
+        int upperBound;
+        int lowerBound;
+        int y;
 
-        private final  int THRESHOLD = 0;
+        public MandelbrotTask(int a, int b){
+            lowerBound = a;
+            upperBound = b;
+        }
 
-        private int count = 0;
-
-        MandelbrotTask(int cnt){
-            super();
-            count = cnt;
+        protected  void computeDirectly(int a , int b){
+            doTask(a, b);
         }
 
         @Override
         public void compute() {
-            if(count <= 1) {
-                doTask();
+
+            if ((upperBound-lowerBound) < THRESHOLD) {
+                computeDirectly(lowerBound, upperBound);
                 return;
             }
-            invokeAll(new MandelbrotTask(count/2),
-                    new MandelbrotTask(count/2));
+            else{
+                int middle = lowerBound + (upperBound-lowerBound)/2;
+                MandelbrotTask worker1 = new MandelbrotTask(lowerBound, middle);
+                MandelbrotTask worker2 = new MandelbrotTask(middle+1, upperBound);
+                invokeAll(worker1, worker2);
+
+            }
         }
     }
 }

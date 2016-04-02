@@ -1,12 +1,7 @@
 package com.example.assl_blue.dacapo_benchmark;
 
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.EditText;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MandelbrotExplict extends MBase {
 
@@ -15,14 +10,15 @@ public class MandelbrotExplict extends MBase {
     }
 
     protected  void doJob(){
-
+        chunk = out.length/numThread;
         threads = new boolean[numThread];
         pool = new Thread[numThread];
         for (int i = 0; i < pool.length; i++) {
+            final int finalI = i;
             pool[i] = new Thread() {
                     int temp =0;
                     public void run() {
-                        doTask();
+                        doTask((finalI *chunk), (finalI +1)*chunk);
                         threads[temp] = true;
                         synchronized (this) {
                             notify();

@@ -8,6 +8,11 @@ import android.widget.TextView;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ *
+ * @author Sima Mehri
+ */
+
 public class MainActivity extends AppCompatActivity {
 
     final static int SET_RESULT = 0;
@@ -19,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     static AtomicInteger yCt;
     static double[] Crb;
     static double[] Cib;
+    int numThreads;
 
     Handler handler2 = new Handler();
     Handler handler = new Handler(){
@@ -58,12 +64,21 @@ public class MainActivity extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        Thread t1 = new Thread(new MandelBrotMsgHnd(handler2));
-        t1.start();
-        try {
-            t1.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        int chunk = out.length/numThreads;
+        Handler[] handlers = new Handler[numThreads];
+        Thread[] threads = new Thread[numThreads];
+
+        for(int i=0; i<numThreads; i++){
+            threads[i] = new Thread(new MandelBrotMsgHnd(handler, i*chunk, (i+1)*chunk));
+            threads[i].start();
+        }
+
+        for (int k=0; k<numThreads; k++) {
+            try{
+                if (threads[k].isAlive()) threads[k].join();
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
         duration = (System.nanoTime() - startTime)/1000000.00;
         System.out.println("Duration= "+duration);
@@ -112,11 +127,14 @@ public class MainActivity extends AppCompatActivity {
 
     public class MandelBrotMsgHnd implements Runnable {
         private final Handler handler;
+        int lb;
+        int ub;
 
-        MandelBrotMsgHnd(Handler handler) {
+        MandelBrotMsgHnd(Handler handler, int a, int b) {
             this.handler = handler;
+            lb = a;
+            ub = b;
         }
-
         public void run() {
             Message msg;
 

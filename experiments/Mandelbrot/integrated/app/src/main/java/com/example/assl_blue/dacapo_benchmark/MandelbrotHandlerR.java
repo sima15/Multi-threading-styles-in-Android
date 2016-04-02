@@ -1,12 +1,6 @@
 package com.example.assl_blue.dacapo_benchmark;
 
-import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.TextView;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -23,38 +17,34 @@ public class MandelbrotHandlerR extends MBase {
 
     @Override
     protected  void doJob(){
-        try {
-            Thread t = new Thread(new Mandelbrot2());
-            t.start();
-            t.join();
-        } catch (InterruptedException e) {
-            Log.e("Mbench", "exception", e);
+        chunk = out.length/numThread;
+        Handler[] handlers = new Handler[numThread];
+        Thread[] threads = new Thread[numThread];
+
+        for(int i=0; i<numThread; i++){
+            threads[i] = new Thread(new Mandelbrot(i*chunk, (i+1)*chunk));
+            threads[i].start();
+        }
+
+        for (int k=0; k<numThread; k++) {
+            try{
+                if (threads[k].isAlive()) threads[k].join();
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
     }
 
-    class Mandelbrot2 implements  Runnable {
+    class Mandelbrot implements  Runnable {
+        int lb;
+        int ub;
 
+        public Mandelbrot(int a, int b){
+            lb = a;
+            ub = b;
+        }
         public void run() {
-            pool = new Thread[numThread];
-            for (int i = 0; i < pool.length; i++) {
-                pool[i] = new Thread() {
-                        public void run() {
-                            doTask();
-                        }
-                    };
-            }
-
-            for (int k=0; k<numThread; k++) {
-                pool[k].start();
-            }
-
-            for (int k=0; k<numThread; k++) {
-                try{
-                    if (pool[k].isAlive()) pool[k].join();
-                }catch (InterruptedException e){
-                    Log.e("Mbench", "exception", e);
-                }
-            }
+            doTask(lb, ub);
         }
     }
 

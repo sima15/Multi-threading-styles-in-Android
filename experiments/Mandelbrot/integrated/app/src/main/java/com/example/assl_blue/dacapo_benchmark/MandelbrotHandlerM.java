@@ -1,12 +1,6 @@
 package com.example.assl_blue.dacapo_benchmark;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.EditText;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -28,47 +22,43 @@ public class MandelbrotHandlerM extends MBase {
 
     @Override
     protected  void doJob(){
-        Thread t1 = new Thread(new MandelBrotMsgHnd(handler));
-        t1.start();
-        try {
-            t1.join();
-        } catch (InterruptedException e) {
-            Log.e("Mbench", "exception", e);
+        chunk = out.length/numThread;
+//        Handler[] handlers = new Handler[numThread];
+        Thread[] threads = new Thread[numThread];
+
+        for(int i=0; i<numThread; i++){
+            threads[i] = new Thread(new MandelBrotMsgHnd(handler, i*chunk, (i+1)*chunk));
+            threads[i].start();
+        }
+
+        for (int k=0; k<numThread; k++) {
+            try{
+                if (threads[k].isAlive()) threads[k].join();
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
     }
 
     public class MandelBrotMsgHnd implements Runnable {
         private final Handler handler;
+        int lb;
+        int ub;
 
-        MandelBrotMsgHnd(Handler handler) {
+        MandelBrotMsgHnd(Handler handler, int a, int b) {
             this.handler = handler;
+            lb = a;
+            ub = b;
         }
 
         public void run() {
             Message msg;
 
-            pool = new Thread[numThread];
-            for (int j = 0; j < pool.length; j++) {
-                pool[j] = new Thread() {
-                        public void run() {
-                            doTask();
-                        }
-                    };
+            int y;
+            while ((y = yCt.getAndIncrement()) < out.length) {
+                putLine(y, out[y]);
             }
-            for (int k=0; k<numThread; k++) {
-                pool[k].start();
-            }
-
-            for (int k=0; k<numThread; k++) {
-                try{
-                    if (pool[k].isAlive()){
-                        pool[k].join();
-                    }
-                }catch (InterruptedException e){
-                    Log.e("Mbench", "exception", e);
-                }
-            }
-
         }
     }
+
 }

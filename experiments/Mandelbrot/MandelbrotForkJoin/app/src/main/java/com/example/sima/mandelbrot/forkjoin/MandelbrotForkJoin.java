@@ -119,12 +119,10 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         int upperBound;
         int lowerBound;
         int y;
-        int range;
 
         public MandelbrotTask(int a, int b){
             lowerBound = a;
             upperBound = b;
-             range = b -a;
         }
 
 

@@ -1,13 +1,9 @@
 package com.example.assl_blue.dacapo_benchmark;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.EditText;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -23,14 +19,15 @@ public class MandelbrotExecutor extends MBase {
     @Override
     protected  void doJob(){
         ExecutorService executor;
-
+        chunk = out.length/numThread;
         executor = Executors.newFixedThreadPool(numThread);
         for (int i = 0; i < numThread; i++) {
 
+            final int finalI = i;
             executor.submit(new Runnable() {
                     @Override
                     public void run() {
-                        doTask();
+                        doTask((finalI *chunk), (finalI +1)*chunk);
                     }
                 });
         }

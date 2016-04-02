@@ -1,8 +1,5 @@
 package com.example.assl_blue.dacapo_benchmark;
 
-import android.app.Activity;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.widget.TextView;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,12 +15,14 @@ public class MBase {
     boolean[] threads;
     Thread[] pool;
 
+    int chunk;
     long startTime;
     long endTime = startTime;
     long totalTime;
     int N =500;
     TextView resultText;
     int numThread;
+    Object lock = new Object();
 
     MBase(int numThread){
         super();
@@ -47,9 +46,10 @@ public class MBase {
         out = new byte[N][(N + 7) / 8];
     };
 
-    protected  void doTask(){
+    protected  void doTask(int a, int b){
         int y;
-        while ((y = yCt.getAndIncrement()) < out.length) {
+        yCt.set(a);
+        while ((y = yCt.getAndIncrement()) < b) {
             putLine(y, out[y]);
         }
     }

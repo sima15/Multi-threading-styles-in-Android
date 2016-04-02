@@ -1,13 +1,6 @@
 package com.example.assl_blue.dacapo_benchmark;
 
-import android.app.Activity;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.SystemClock;
-import android.util.Log;
-import android.widget.TextView;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MandelbrotAsynctask extends MBase {
 
@@ -17,56 +10,51 @@ public class MandelbrotAsynctask extends MBase {
 
     @Override
     protected void doJob() {
-        new MandelAsyncTask().execute();
+
+        MandelAsyncTask[] tasks;
+
+        int chunk = out.length/numThread;
+        tasks = new MandelAsyncTask[numThread];
+        for(int i=0; i<numThread; i++){
+            tasks[i] = new MandelAsyncTask(i*chunk, (i+1)*chunk);
+            tasks[i].execute();
+        }
+
+        for (int k=0; k<numThread; k++) {
+            synchronized (lock) {
+                try {
+                    while (!tasks[k].done) lock.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 
     class MandelAsyncTask extends AsyncTask<Void, Void, String> {
 
+        boolean done = false;
+        int lb;
+        int ub;
+
+        public MandelAsyncTask(int a, int b) {
+            lb = a;
+            ub = b;
+        }
 
         @Override
         protected String doInBackground(Void... params) {
 
-            threads = new boolean[numThread];
+            doTask(lb, ub);
+            done = true;
 
-            pool = new Thread[numThread];
-            for (int i = 0; i < pool.length; i++) {
-                pool[i] = new workerThread();
-                pool[i].start();
+            synchronized (lock) {
+                lock.notify();
             }
 
-            for (int k = 0; k < numThread; k++) {
-                try {
-                    if (pool[k].isAlive()) pool[k].join();
-                } catch (InterruptedException e) {
-                    Log.e("Mbench", "exception", e);
-                }
-            }
-
-            pool.clone();
-            return "";
-        }
-
-        class workerThread extends Thread {
-            int temp = 0;
-
-            @Override
-            public void run() {
-                doTask();
-                threads[temp] = true;
-
-                synchronized (this) {
-                    notify();
-                }
-            }
-        }
-
-
-        @Override
-        protected void onPostExecute(String v) {
-            //resultText.setText(String.valueOf(totalTime));
+            return null;
         }
     }
-
 }
 
