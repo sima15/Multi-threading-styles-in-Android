@@ -57,8 +57,7 @@ public class MainActivity extends AppCompatActivity {
         for (int k=0; k<numThreads; k++) {
             synchronized (object) {
                 try {
-                    if (tasks[k].getStatus() != AsyncTask.Status.FINISHED) object.wait();
-                    System.out.println("Waiting for thread " + k + " to complete");
+                    while (!tasks[k].done) object.wait();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -72,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
     class MandelAsyncTask extends AsyncTask<Integer, Void, String> {
 
+        boolean done = false;
         int lb;
         int ub;
 
@@ -87,20 +87,17 @@ public class MainActivity extends AppCompatActivity {
             while ((y = yCt.getAndIncrement()) < ub) {
                 putLine(y, out[y]);
             }
+            done = true;
 
-            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-            for(int i=0;i<N;i++) System.out.println(out[i]);
-
-            if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
+//            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+//            for(int i=0;i<N;i++) System.out.println(out[i]);
+//
             synchronized (object) {
                 object.notify();
                 Log.d("Log", Thread.currentThread().getName() + "Notified");
             }
 
-
-
-
-            if(System.nanoTime()>endTime) endTime= System.nanoTime();
+            endTime= System.nanoTime();
 
            return  null;
         }
@@ -143,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return res ^ -1;
     }
+
     static void putLine(int y, byte[] line) {
         for (int xb = 0; xb < line.length; xb++)
             line[xb] = (byte) getByte(xb * 8, y);
