@@ -1,44 +1,53 @@
-package com.example.sima.mandelbrothandlerrnew;
+package com.example.sima.mandelbrothandlermnew;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- *
- * @author Sima Mehri
- */
-
 public class MainActivity extends AppCompatActivity {
+
+    final static int SET_RESULT = 0;
 
     long startTime;
     double duration;
-    int N = 500;
-    int numThreads = 4;
+    int N= 500;
     byte[][] out;
     static AtomicInteger yCt;
     static double[] Crb;
     static double[] Cib;
-    private TextView resultText;
-    Handler[] handlers;
 
+    Handler handler2 = new Handler();
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case SET_RESULT: {
+                    textHandler.setText((String) msg.obj);
+                    break;
+                }
+            }
+        }
+
+    };
+    private TextView textHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        resultText = (TextView) findViewById(R.id.resultText);
+        textHandler = (TextView) findViewById(R.id.resultText);
 
         startTime = System.nanoTime();
         System.out.println("Start time is: " + startTime);
 
-        for (int i = 0; i < 800; i++)
+        for(int i=0; i<80; i++)
             doJob();
     }
 
-    protected void doJob() {
+    protected  void doJob(){
         Crb = new double[N + 7];
         Cib = new double[N + 7];
         double invN = 2.0 / N;
@@ -49,26 +58,16 @@ public class MainActivity extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        int chunk = out.length/numThreads;
-        handlers = new Handler[numThreads];
-        Thread[] threads = new Thread[numThreads];
-
-        for(int i=0; i<numThreads; i++){
-            threads[i] = new Thread(new Mandelbrot(i*chunk, (i+1)*chunk));
-            threads[i].start();
+        Thread t1 = new Thread(new MandelBrotMsgHnd(handler2));
+        t1.start();
+        try {
+            t1.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-
-        for (int k=0; k<numThreads; k++) {
-            try{
-                if (threads[k].isAlive()) threads[k].join();
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
-        }
-
-        duration = (System.nanoTime() - startTime) / 1000000.00;
-        System.out.println("Duration: " + duration);
-        resultText.setText(String.valueOf(duration));
+        duration = (System.nanoTime() - startTime)/1000000.00;
+        System.out.println("Duration= "+duration);
+        new Thread(new Result(handler)).start();
     }
 
     static int getByte(int x, int y) {
@@ -106,37 +105,39 @@ public class MainActivity extends AppCompatActivity {
         }
         return res ^ -1;
     }
-
     static void putLine(int y, byte[] line) {
         for (int xb = 0; xb < line.length; xb++)
             line[xb] = (byte) getByte(xb * 8, y);
     }
 
-    class Mandelbrot implements Runnable {
+    public class MandelBrotMsgHnd implements Runnable {
+        private final Handler handler;
 
-        int lb;
-        int ub;
-
-        public Mandelbrot(int a, int b){
-            lb = a;
-            ub = b;
+        MandelBrotMsgHnd(Handler handler) {
+            this.handler = handler;
         }
+
         public void run() {
+            Message msg;
 
-//            System.out.println("lb= "+lb + " up = "+ ub);
-            int y;
-            yCt.set(lb);
-            while ((y = yCt.getAndIncrement()) < ub)
-                putLine(y, out[y]);
+                        int y;
+                        while ((y = yCt.getAndIncrement()) < out.length) {
+                            putLine(y, out[y]);
+                        }
+        }
+    }
 
+    public  class  Result implements  Runnable{
+        Message message;
 
-//            handler.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    resultText.setText(String.valueOf((int) duration));
-//                }
-//            });
+        public Result (Handler h){
+            handler = h;
+        }
 
+        public  void run(){
+            String time = String.valueOf(duration);
+            message  = handler.obtainMessage(SET_RESULT, time);
+            handler.sendMessage(message);
         }
 
     }
