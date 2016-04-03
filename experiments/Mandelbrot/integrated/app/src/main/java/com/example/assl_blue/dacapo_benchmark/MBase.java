@@ -19,7 +19,7 @@ public class MBase {
     long startTime;
     long endTime = startTime;
     long totalTime;
-    int N =500;
+    int N =2000;
     TextView resultText;
     int numThread;
     Object lock = new Object();

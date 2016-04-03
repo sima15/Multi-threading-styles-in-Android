@@ -1,6 +1,7 @@
 package com.example.assl_blue.dacapo_benchmark;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class MandelbrotAsynctask extends MBase {
 
@@ -25,7 +26,7 @@ public class MandelbrotAsynctask extends MBase {
                 try {
                     while (!tasks[k].done) lock.wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("Mbench", "exception", e);
                 }
             }
         }

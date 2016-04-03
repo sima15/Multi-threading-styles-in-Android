@@ -1,6 +1,7 @@
 package com.example.assl_blue.dacapo_benchmark;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 /**
  *
@@ -35,7 +36,7 @@ public class MandelbrotHandlerM extends MBase {
             try{
                 if (threads[k].isAlive()) threads[k].join();
             }catch (InterruptedException e){
-                e.printStackTrace();
+                Log.e("Mbench", "exception", e);
             }
         }
     }

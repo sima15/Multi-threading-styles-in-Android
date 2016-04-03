@@ -21,7 +21,6 @@ public class Mandelbrot1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot1);
 
-        //startTest(Style.ForkJoin,4);
         localTest();
 
     }
@@ -40,13 +39,11 @@ public class Mandelbrot1 extends AppCompatActivity {
 
     private void startTest(Style style, int numThreads){
         long startTime;
+        startTime = System.currentTimeMillis();
         Log.i("MBench Local Test Start", String.format("Style : %s Number of Thread %d", style.toString(), numThreads));
-        startTime = System.nanoTime();
-        Log.d("MBench Test start", "start time is: " + startTime);
         MBase c = getStyleClass(style, numThreads);
         c.doJob();
-        Log.d("MBench Test End", "end time is: " + startTime + " Duration" + (System.nanoTime() - startTime));
-        Log.i("MBench Local Test End", String.format("Style : %s Number of Thread %d", style.toString(), numThreads));
+        Log.i("MBench Local Test End", String.format("Style : %s Number of Thread %d duration : %d", style.toString(), numThreads, (System.currentTimeMillis() - startTime)));
     }
 
     private MBase getStyleClass(Style style, int numThreads) {
