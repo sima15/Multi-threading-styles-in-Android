@@ -18,7 +18,7 @@ public class MandelbrotAsynctask extends MBase {
         tasks = new MandelAsyncTask[numThread];
         for(int i=0; i<numThread; i++){
             tasks[i] = new MandelAsyncTask(i*chunk, (i+1)*chunk);
-            tasks[i].execute();
+            tasks[i].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         for (int k=0; k<numThread; k++) {
