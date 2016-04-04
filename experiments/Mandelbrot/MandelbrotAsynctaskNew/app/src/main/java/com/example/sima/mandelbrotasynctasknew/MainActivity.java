@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     long totalTime;
     int N =500;
     TextView resultText;
-    int numThreads = 4;
+    int numThreads = 16;
     MandelAsyncTask[] tasks;
     Object object = new Object();
 
@@ -29,9 +29,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         resultText = (TextView) findViewById(R.id.resultText);
-
         startTime = System.nanoTime();
         System.out.println("start time is: " + startTime);
+
+        for(int i=0; i<80; i++)
+           doJob();
+
         String result = doJob();
         resultText.setText(result);
     }

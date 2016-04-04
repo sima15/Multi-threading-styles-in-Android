@@ -12,23 +12,35 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author Sima Mehri
+ */
 public class ImageBlur extends AppCompatActivity {
 
-    Bitmap bitmap;
-    Bitmap orgBitmap;
-    Bitmap dest;
+
     int[] src, dst;
     int w , h;
     long startTime;
+    int numThreads =8;
+    Bitmap bitmap;
+    Bitmap orgBitmap;
+    Bitmap dest;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_blur);
         startTime = System.currentTimeMillis();
+
+//        for(int i=0; i<800; i++)
+            doJob();
+    }
+
+    void doJob(){
         System.out.println("Start time: "+ startTime);
         LinearLayout layout = (LinearLayout)findViewById(R.id.layout);
 
-        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/redrose-2.jpg";
+        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/rose-06.jpg";
         orgBitmap = BitmapFactory.decodeFile(bitmapPath);
         bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
         dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
@@ -38,12 +50,12 @@ public class ImageBlur extends AppCompatActivity {
         src = new int[w * h];
         dst = new int[w * h];
 
-        for(int i=0; i<10; i++) {
+//        for(int i=0; i<10; i++) {
             bitmap.getPixels(src, 0, w, 0, 0, w, h);
             // src = bitmap.
 
             ForkBlur fb = new ForkBlur(src, 0, src.length, dst);
-            ForkJoinPool pool = new ForkJoinPool();
+            ForkJoinPool pool = new ForkJoinPool(numThreads);
             pool.invoke(fb);
             pool.shutdown();
             try {
@@ -53,11 +65,10 @@ public class ImageBlur extends AppCompatActivity {
             }
             dest.setPixels(dst, 0, w, 0, 0, w, h);
 
-        }
+//        }
         layout.setBackground(new BitmapDrawable(dest));
         System.out.println("Duration: "+(System.currentTimeMillis()-startTime));
     }
-
     public class ForkBlur extends RecursiveAction {
          int[] mSource;
          int mStart;

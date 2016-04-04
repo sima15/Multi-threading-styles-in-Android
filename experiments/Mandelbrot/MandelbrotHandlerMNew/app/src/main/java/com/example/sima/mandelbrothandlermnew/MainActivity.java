@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         out = new byte[N][(N + 7) / 8];
 
         int chunk = out.length/numThreads;
-        Handler[] handlers = new Handler[numThreads];
+        Handler handler = new Handler();
         Thread[] threads = new Thread[numThreads];
 
         for(int i=0; i<numThreads; i++){

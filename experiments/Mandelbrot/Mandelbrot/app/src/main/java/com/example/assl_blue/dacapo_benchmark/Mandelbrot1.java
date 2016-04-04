@@ -29,18 +29,18 @@ public class Mandelbrot1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot1);
 
-                startTime = System.currentTimeMillis();
-                System.out.println("Start time is: " + startTime);
-                inputText = (EditText) findViewById(R.id.inputText);
+            startTime = System.currentTimeMillis();
+            System.out.println("Start time is: " + startTime);
+            inputText = (EditText) findViewById(R.id.inputText);
 
-                for(int i=0; i<800; i++) doJob();
+            for(int i=0; i<800; i++) doJob();
 
-                if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
+            if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
 
-                if(mainThread) totalTime = endTime - startTime;
-                System.out.println("end time is: "+endTime);
-                System.out.println("Total time is: "+totalTime);
-                inputText.setText(String.valueOf(totalTime));
+            if(mainThread) totalTime = endTime - startTime;
+            System.out.println("end time is: "+endTime);
+            System.out.println("Total time is: "+totalTime);
+            inputText.setText(String.valueOf(totalTime));
     }
 
 

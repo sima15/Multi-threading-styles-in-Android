@@ -2,309 +2,124 @@ package com.example.sima.imageblurexplicit;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.widget.LinearLayout;
+
+/**
+ * @author Sima Mehri
+ */
 
 public class MainActivity extends AppCompatActivity {
 
+    int[] src, dst;
     int w, h;
     int pieceWidth;
-    int numThreads =4;
+    int numThreads = 16;
     Worker[] pool;
     long startTime;
-
     Bitmap orgBitmap;
     Bitmap bitmap;
-    Bitmap placeholder;
-    Canvas canvas;
-    LinearLayout layout;
-    Bitmap[] bmpArray = new Bitmap[numThreads];
-    Object lock1 = new Object();
+    Bitmap dest;
 
-    public Bitmap createPlaceholder() {
 
-        Bitmap placeholderObj = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        return placeholderObj;
-    }
-
-    public void splitImage() {
-        pieceWidth = w/numThreads;
-        for (int i = 0; i < bmpArray.length; i++) {
-            bmpArray[i] = Bitmap.createBitmap(bitmap, i*pieceWidth, 0,pieceWidth, h);
-        }
-//        System.out.println("bmpArray: "+Arrays.toString(bmpArray));
-    }
-
-    public void copyPartToPlaceholder(Bitmap smallBitmap, int index) {
-
-        canvas.drawBitmap(smallBitmap, index * pieceWidth, 0, null);
-    }
-
-    boolean checkDone() {
-        for (Worker a : pool) {
-            if (!a.done) return false;
-        }
-        return true;
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         startTime = System.currentTimeMillis();
-        layout = (LinearLayout)findViewById(R.id.linearLayout);
+//        for(int i=0; i<800; i++)
+            doJob();
+    }
 
-//        nthreads = Runtime.getRuntime().availableProcessors();
-        System.out.println("No of threads: " + numThreads);
+    void doJob(){
+        System.out.println("Start time: " + String.valueOf(startTime));
+        LinearLayout layout = (LinearLayout)findViewById(R.id.linearLayout);
+
         String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
         orgBitmap = BitmapFactory.decodeFile(bitmapPath);
-        bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
+        bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
+        dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
 
         w = bitmap.getWidth();
         h = bitmap.getHeight();
+        pieceWidth = w/numThreads;
 
-        for(int j=1; j <= 15; j++){
-        splitImage();
+        src = new int[w * h];
+        dst = new int[w * h];
+        bitmap.getPixels(src, 0, w, 0, 0, w, h);
+
         pool = new Worker[numThreads];
 
         for(int i=0; i<numThreads; i++){
-            pool[i] = new Worker(pieceWidth, h, i, bmpArray[i]);
+            pool[i] = new Worker(src, i*pieceWidth, w*h, dst);
             pool[i].start();
         }
 
-        synchronized (lock1){
-            while (!checkDone()){
+        for(int j=0; j<numThreads; j++){
+            if(pool[j].isAlive()){
                 try {
-                    lock1.wait();
+                    pool[j].join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-        }placeholder = createPlaceholder();
-        canvas = new Canvas(placeholder);
-        for(int i=0; i<numThreads; i++){
-            copyPartToPlaceholder(bmpArray[i], i);
-        }
         }
 
-        layout.setBackground(new BitmapDrawable(placeholder));
+        dest.setPixels(dst, 0, w, 0, 0, w, h);
+
+        layout.setBackground(new BitmapDrawable(dest));
         System.out.println("Duration: "+ (System.currentTimeMillis()-startTime));
 
     }
 
     public class Worker extends  Thread {
-        int w, h;
-        int radius = 35;
-        boolean done = false;
-        int index;
-        Bitmap bitmap = null;//Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        int[] mSource;
+        int mStart;
+        int mLength;
+        int[] mDestination;
 
-        Worker( int w, int h, int index, Bitmap orgBmp) {
-            this.w = w;
-            this.h = h;
-            this.index = index;
-            bitmap = Bitmap.createBitmap(orgBmp, 0, 0, orgBmp.getWidth(), orgBmp.getHeight());
+        // Processing window size; should be odd.
+        private int mBlurWidth = 15;
+
+        public Worker(int[] src, int start, int length, int[] dst) {
+            mSource = src;
+            mStart = start;
+            mLength = length;
+            mDestination = dst;
         }
-
 
         @Override
         public void run() {
-            int[] pix = new int[w * h];
-            bitmap.getPixels(pix, 0, w, 0, 0, w, h);
 
-            int wm = w - 1;
-            int hm = h - 1;
-            int wh = w * h;
-            int div = radius + radius + 1;
-
-            int r[] = new int[wh];
-            int g[] = new int[wh];
-            int b[] = new int[wh];
-            int rsum, gsum, bsum, x, y, i, p, yp, yi, yw;
-            int vmin[] = new int[Math.max(w, h)];
-
-            int divsum = (div + 1) >> 1;
-            divsum *= divsum;
-            int dv[] = new int[256 * divsum];
-            for (i = 0; i < 256 * divsum; i++) {
-                dv[i] = (i / divsum);
-            }
-
-            yw = yi = 0;
-
-            int[][] stack = new int[div][3];
-            int stackpointer;
-            int stackstart;
-            int[] sir;
-            int rbs;
-            int r1 = radius + 1;
-            int routsum, goutsum, boutsum;
-            int rinsum, ginsum, binsum;
-
-            for (y = 0; y < h; y++) {
-                rinsum = ginsum = binsum = routsum = goutsum = boutsum = rsum = gsum = bsum = 0;
-                for (i = -radius; i <= radius; i++) {
-                    p = pix[yi + Math.min(wm, Math.max(i, 0))];
-                    sir = stack[i + radius];
-                    sir[0] = (p & 0xff0000) >> 16;
-                    sir[1] = (p & 0x00ff00) >> 8;
-                    sir[2] = (p & 0x0000ff);
-                    rbs = r1 - Math.abs(i);
-                    rsum += sir[0] * rbs;
-                    gsum += sir[1] * rbs;
-                    bsum += sir[2] * rbs;
-                    if (i > 0) {
-                        rinsum += sir[0];
-                        ginsum += sir[1];
-                        binsum += sir[2];
-                    } else {
-                        routsum += sir[0];
-                        goutsum += sir[1];
-                        boutsum += sir[2];
-                    }
+            int sidePixels = (mBlurWidth - 1) / 2;
+            for (int index = mStart; index < mStart + mLength; index++) {
+                // Calculate average.
+                float rt = 0, gt = 0, bt = 0;
+                for (int mi = -sidePixels; mi <= sidePixels; mi++) {
+                    int mindex = Math.min(Math.max(mi + index, 0),
+                            mSource.length - 1);
+                    int pixel = mSource[mindex];
+                    rt += (float) ((pixel & 0x00ff0000) >> 16)
+                            / mBlurWidth;
+                    gt += (float) ((pixel & 0x0000ff00) >> 8)
+                            / mBlurWidth;
+                    bt += (float) ((pixel & 0x000000ff) >> 0)
+                            / mBlurWidth;
                 }
-                stackpointer = radius;
 
-                for (x = 0; x < w; x++) {
-
-                    r[yi] = dv[rsum];
-                    g[yi] = dv[gsum];
-                    b[yi] = dv[bsum];
-
-                    rsum -= routsum;
-                    gsum -= goutsum;
-                    bsum -= boutsum;
-
-                    stackstart = stackpointer - radius + div;
-                    sir = stack[stackstart % div];
-
-                    routsum -= sir[0];
-                    goutsum -= sir[1];
-                    boutsum -= sir[2];
-
-                    if (y == 0) {
-                        vmin[x] = Math.min(x + radius + 1, wm);
-                    }
-                    p = pix[yw + vmin[x]];
-
-                    sir[0] = (p & 0xff0000) >> 16;
-                    sir[1] = (p & 0x00ff00) >> 8;
-                    sir[2] = (p & 0x0000ff);
-
-                    rinsum += sir[0];
-                    ginsum += sir[1];
-                    binsum += sir[2];
-
-                    rsum += rinsum;
-                    gsum += ginsum;
-                    bsum += binsum;
-
-                    stackpointer = (stackpointer + 1) % div;
-                    sir = stack[(stackpointer) % div];
-
-                    routsum += sir[0];
-                    goutsum += sir[1];
-                    boutsum += sir[2];
-
-                    rinsum -= sir[0];
-                    ginsum -= sir[1];
-                    binsum -= sir[2];
-
-                    yi++;
+                // Reassemble destination pixel.
+                int dpixel = (0xff000000) |
+                        (((int) rt) << 16) |
+                        (((int) gt) << 8) |
+                        (((int) bt) << 0);
+                if (index < mDestination.length) {
+                    mDestination[index] = dpixel;
+                    dst[index] = dpixel;
                 }
-                yw += w;
-            }
-            for (x = 0; x < w; x++) {
-                rinsum = ginsum = binsum = routsum = goutsum = boutsum = rsum = gsum = bsum = 0;
-                yp = -radius * w;
-                for (i = -radius; i <= radius; i++) {
-                    yi = Math.max(0, yp) + x;
-
-                    sir = stack[i + radius];
-
-                    sir[0] = r[yi];
-                    sir[1] = g[yi];
-                    sir[2] = b[yi];
-
-                    rbs = r1 - Math.abs(i);
-
-                    rsum += r[yi] * rbs;
-                    gsum += g[yi] * rbs;
-                    bsum += b[yi] * rbs;
-
-                    if (i > 0) {
-                        rinsum += sir[0];
-                        ginsum += sir[1];
-                        binsum += sir[2];
-                    } else {
-                        routsum += sir[0];
-                        goutsum += sir[1];
-                        boutsum += sir[2];
-                    }
-
-                    if (i < hm) {
-                        yp += w;
-                    }
-                }
-                yi = x;
-                stackpointer = radius;
-                for (y = 0; y < h; y++) {
-                    // Preserve alpha channel: ( 0xff000000 & pix[yi] )
-                    pix[yi] = (0xff000000 & pix[yi]) | (dv[rsum] << 16) | (dv[gsum] << 8) | dv[bsum];
-
-                    rsum -= routsum;
-                    gsum -= goutsum;
-                    bsum -= boutsum;
-
-                    stackstart = stackpointer - radius + div;
-                    sir = stack[stackstart % div];
-
-                    routsum -= sir[0];
-                    goutsum -= sir[1];
-                    boutsum -= sir[2];
-
-                    if (x == 0) {
-                        vmin[y] = Math.min(y + r1, hm) * w;
-                    }
-                    p = x + vmin[y];
-
-                    sir[0] = r[p];
-                    sir[1] = g[p];
-                    sir[2] = b[p];
-
-                    rinsum += sir[0];
-                    ginsum += sir[1];
-                    binsum += sir[2];
-
-                    rsum += rinsum;
-                    gsum += ginsum;
-                    bsum += binsum;
-
-                    stackpointer = (stackpointer + 1) % div;
-                    sir = stack[stackpointer];
-
-                    routsum += sir[0];
-                    goutsum += sir[1];
-                    boutsum += sir[2];
-
-                    rinsum -= sir[0];
-                    ginsum -= sir[1];
-                    binsum -= sir[2];
-
-                    yi += w;
-                }
-            }
-
-            bitmap.setPixels(pix, 0, w, 0, 0, w, h);
-            bmpArray[index] = bitmap;
-            done = true;
-
-            synchronized (lock1){
-                lock1.notify();
             }
         }
     }
