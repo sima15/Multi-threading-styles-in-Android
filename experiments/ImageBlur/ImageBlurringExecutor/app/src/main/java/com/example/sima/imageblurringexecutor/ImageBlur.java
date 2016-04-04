@@ -57,6 +57,7 @@ public class ImageBlur extends AppCompatActivity {
         dst = new int[w * h];
         bitmap.getPixels(src, 0, w, 0, 0, w, h);
 
+
         pool = Executors.newFixedThreadPool(numThreads);
 
         for (int j = 0; j < numThreads; j++) {

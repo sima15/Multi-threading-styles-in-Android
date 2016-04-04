@@ -1,22 +1,18 @@
 package com.example.sima.imgblurexplpowerm;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
-import android.util.Log;
 
 /**
  * Created by daehyeok on 2016. 3. 22..
  */
 class AsyncTaskBlur extends AsyncTask<Void, Void, Void> {
 
-
+    MainActivity mainActivity;
     Bluer bluer;
 
-    AsyncTaskBlur(MainActivity mainActivity, int w, int h, int index, Bitmap orgBmp) {
+    AsyncTaskBlur(MainActivity mainActivity, int[] src, int start, int length, int[] dst) {
         super();
-        bluer = new Bluer(mainActivity,  w,  h,  index,  orgBmp);
+        bluer = new Bluer(mainActivity,  src,  start,  length,  dst);
     }
 
 
@@ -27,9 +23,4 @@ class AsyncTaskBlur extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
-
-    @Override
-    protected void onPostExecute(Void v) {
-
-    }
 }

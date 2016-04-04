@@ -51,19 +51,19 @@ public class ImageBlur extends AppCompatActivity {
         dst = new int[w * h];
 
 //        for(int i=0; i<10; i++) {
-            bitmap.getPixels(src, 0, w, 0, 0, w, h);
-            // src = bitmap.
+        bitmap.getPixels(src, 0, w, 0, 0, w, h);
+        // src = bitmap.
 
-            ForkBlur fb = new ForkBlur(src, 0, src.length, dst);
-            ForkJoinPool pool = new ForkJoinPool(numThreads);
-            pool.invoke(fb);
-            pool.shutdown();
-            try {
-                pool.awaitTermination(500, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            dest.setPixels(dst, 0, w, 0, 0, w, h);
+        ForkBlur fb = new ForkBlur(src, 0, src.length, dst);
+        ForkJoinPool pool = new ForkJoinPool(numThreads);
+        pool.invoke(fb);
+        pool.shutdown();
+        try {
+            pool.awaitTermination(500, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        dest.setPixels(dst, 0, w, 0, 0, w, h);
 
 //        }
         layout.setBackground(new BitmapDrawable(dest));

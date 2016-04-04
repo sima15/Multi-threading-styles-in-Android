@@ -1,55 +1,151 @@
 package com.example.sima.imgblurexplpowerm;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.os.Environment;
-import android.util.Log;
+import android.os.AsyncTask;
+import android.os.Handler;
 
-/**
- * Created by daehyeok on 2016. 3. 22..
- */
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+
+
 public class JobHandler extends Thread {
-    private MainActivity mainActivity;
-    Worker[] pool;
+    int type;
+    final int  EXPLICIT = 0;
+    final int EXECUTOR = 1;
+    final int FORKJOIN = 2;
+    final int ASYNCTASK = 3;
+    final int HANDLERR = 4;
+    final int HANDLERM = 5;
 
-    public JobHandler(MainActivity mainActivity) {
+    private MainActivity mainActivity;
+    public JobHandler(MainActivity mainActivity, int type) {
         this.mainActivity = mainActivity;
+        this.type = type;
     }
 
-    public void run() {
-        mainActivity.splitImage();
-        pool = new Worker[mainActivity.numThreads];
+    public void run(){
+        mainActivity.startTime = System.currentTimeMillis();
+        mainActivity.doJob();
+
+        switch (type){
+            case EXPLICIT: {
+                Explicit[] pool = new Explicit[mainActivity.numThreads];
 
 
-        for (int i = 0; i < mainActivity.numThreads; i++) {
-            pool[i] = new Worker(mainActivity, mainActivity.pieceWidth, mainActivity.h, i, mainActivity.bmpArray[i]);
-            pool[i].start();
-        }
+                for (int i = 0; i < mainActivity.numThreads; i++) {
+                    pool[i] = new Explicit(mainActivity, mainActivity.src, i * mainActivity.pieceWidth,
+                            mainActivity.w * mainActivity.h, mainActivity.dst);
+                    pool[i].start();
+                }
 
-        synchronized (mainActivity.lock1) {
-            while (!checkDone()) {
-                try {
-                    mainActivity.lock1.wait();
-                } catch (InterruptedException e) {
-                    Log.e("IBench", "exception", e);
+                for (int j = 0; j < mainActivity.numThreads; j++) {
+                    if (pool[j].isAlive()) {
+                        try {
+                            pool[j].join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                 }
             }
-        }
-        mainActivity.placeholder = mainActivity.createPlaceholder();
-        mainActivity.canvas = new Canvas(mainActivity.placeholder);
-        for (int i = 0; i < mainActivity.numThreads; i++) {
-            mainActivity.copyPartToPlaceholder(mainActivity.bmpArray[i], i);
+            break;
+            case EXECUTOR: {
+                ExecutorService pool;
+                pool = Executors.newFixedThreadPool(mainActivity.numThreads);
+                for (int j = 0; j < mainActivity.numThreads; j++) {
+                    pool.submit(new ExecutorBlur(mainActivity, mainActivity.src, j*mainActivity.pieceWidth,
+                            mainActivity.w*mainActivity.h, mainActivity.dst));
+                }
+
+                pool.shutdown();
+                try {
+                    pool.awaitTermination(500, TimeUnit.SECONDS);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+            case FORKJOIN: {
+                ForkBlur fb = new ForkBlur(mainActivity, mainActivity.src, 0,
+                        mainActivity.w * mainActivity.h, mainActivity.dst);
+                ForkJoinPool pool = new ForkJoinPool(mainActivity.numThreads);
+                pool.invoke(fb);
+                pool.shutdown();
+                try {
+                    pool.awaitTermination(500, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            case ASYNCTASK: {
+                AsyncTaskBlur[] pool = new AsyncTaskBlur[mainActivity.numThreads];
+                for (int j = 0; j < mainActivity.numThreads; j++) {
+                    pool[j] = new AsyncTaskBlur(mainActivity, mainActivity.src, j * mainActivity.pieceWidth,
+                            mainActivity.w * mainActivity.h, mainActivity.dst);
+                    pool[j].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+
+
+                for(int j=0; j<mainActivity.numThreads; j++) {
+                    try {
+                        pool[j].get();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            case HANDLERR: {
+                Handler handler;
+                Thread[] pool = new Thread[mainActivity.numThreads];
+
+                for (int j = 0; j < mainActivity.numThreads; j++) {
+                    pool[j] = new Thread(new HandlerR(mainActivity, mainActivity.src, j * mainActivity.pieceWidth,
+                            mainActivity.w * mainActivity.h, mainActivity.dst));
+                    pool[j].start();
+                }
+
+                for(int j=0; j<mainActivity.numThreads; j++){
+                    if(pool[j].isAlive()){
+                        try {
+                            pool[j].join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            case  HANDLERM:{
+                Handler handler = new Handler();
+                Thread[] pool = new Thread[mainActivity.numThreads];
+
+                for(int i=0; i<mainActivity.numThreads; i++){
+                    pool[i] =  new Thread(new HandlerM(mainActivity, mainActivity.src, i * mainActivity.pieceWidth,
+                            mainActivity.w * mainActivity.h, mainActivity.dst, handler));
+                    pool[i].start();
+                }
+
+                for(int j=0; j<mainActivity.numThreads; j++){
+                    if(pool[j].isAlive()) {
+                        try{
+                            pool[j].join();
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
         }
 
-//            view.setText(String.valueOf(duration));
-    }
+        mainActivity.dest.setPixels(mainActivity.dst, 0, mainActivity.w, 0, 0, mainActivity.w, mainActivity.h);
 
-    boolean checkDone() {
-        for (Worker a : pool) {
-            if (!a.bluer.done) return false;
-        }
-        return true;
+//        mainActivity.layout.setBackground(new BitmapDrawable(mainActivity.dest));
+        System.out.println("Duration: " + (System.currentTimeMillis() - mainActivity.startTime));
+
     }
 }
 

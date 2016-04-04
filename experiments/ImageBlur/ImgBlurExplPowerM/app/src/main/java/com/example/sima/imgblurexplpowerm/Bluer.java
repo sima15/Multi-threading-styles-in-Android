@@ -3,6 +3,9 @@ package com.example.sima.imgblurexplpowerm;
 /**
  * Modified by Sima
  */
+
+import android.os.Handler;
+
 /**
  * Created by daehyeok on 2016. 3. 31..
  */
@@ -15,6 +18,7 @@ public class Bluer  {
     int mLength;
     int[] mDestination;
     private int mBlurWidth = 15;
+    Handler handler;
 
     Bluer(MainActivity mainActivity, int[] src, int start, int length, int[] dst) {
         this.mainActivity = mainActivity;
@@ -22,6 +26,14 @@ public class Bluer  {
         mStart = start;
         mLength = length;
         mDestination = dst;
+    }
+    Bluer(MainActivity mainActivity, int[] src, int start, int length, int[] dst, Handler han) {
+        this.mainActivity = mainActivity;
+        mSource = src;
+        mStart = start;
+        mLength = length;
+        mDestination = dst;
+        handler = han;
     }
 
 
