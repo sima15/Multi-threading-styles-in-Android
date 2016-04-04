@@ -31,8 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     void doJob(){
 
-        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
-        orgBitmap = BitmapFactory.decodeFile(bitmapPath);
+
         bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
         dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
 
@@ -82,7 +81,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        orgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.testimage);
+
         mainActivity = new MainActivity();
+        mainActivity.orgBitmap = orgBitmap;
         layout = (LinearLayout)findViewById(R.id.layout);
 
 //        startWithPM();
