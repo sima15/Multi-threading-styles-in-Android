@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
@@ -24,22 +25,17 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
+    int[] src, dst;
     int w, h;
-    static int pieceWidth;
-    int numThreads = 2;
-    //Worker[] pool;
+    int pieceWidth;
+    int numThreads = 16;
+//    Worker[] pool;
     long startTime;
-    long duration;
-
     Bitmap orgBitmap;
     Bitmap bitmap;
-    Bitmap placeholder;
-    Canvas canvas;
+    Bitmap dest;
     LinearLayout layout;
-    Bitmap[] bmpArray; // = new Bitmap[numThreads];
-    Object lock1 = new Object();
-    TextView view;
-    public int repeatNum = 50;
+    MainActivity mainActivity = new MainActivity();
 
     public enum Style {
         Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM
@@ -47,35 +43,57 @@ public class MainActivity extends AppCompatActivity {
 
     Style style;
 
-    public Bitmap createPlaceholder() {
+    void doJob(){
+        System.out.println("Start time: " + String.valueOf(startTime));
+        layout = (LinearLayout)findViewById(R.id.linearLayout);
 
-        Bitmap placeholderObj = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        return placeholderObj;
-    }
+        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
+        orgBitmap = BitmapFactory.decodeFile(bitmapPath);
+        bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
+        dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
 
-    public void splitImage() {
-        pieceWidth = w / numThreads;
-        for (int i = 0; i < bmpArray.length; i++) {
-            bmpArray[i] = Bitmap.createBitmap(bitmap, i * pieceWidth, 0, pieceWidth, h);
-        }
-    }
+        w = bitmap.getWidth();
+        h = bitmap.getHeight();
+        pieceWidth = w/numThreads;
 
-    public void copyPartToPlaceholder(Bitmap smallBitmap, int index) {
-
-        canvas.drawBitmap(smallBitmap, index * pieceWidth, 0, null);
+        src = new int[w * h];
+        dst = new int[w * h];
+        bitmap.getPixels(src, 0, w, 0, 0, w, h);
     }
 
 
     private void startExplict() {
-        bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
-        Explicit w1 = new Explicit(this);
-        w1.start();
-        try {
-            w1.join();
-        } catch (Exception e) {
-            Log.e("IBench", "exception", e);
+//        bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
+//        Explicit w1 = new Explicit(this);
+        doJob();
+        Worker[] pool = new Worker[numThreads];
+
+
+        for(int i=0; i<numThreads; i++){
+            pool[i] = new Worker(mainActivity, src, i*pieceWidth, w*h, dst);
+            pool[i].start();
         }
-        layout.setBackground(new BitmapDrawable(placeholder));
+
+        for(int j=0; j<numThreads; j++){
+            if(pool[j].isAlive()){
+                try {
+                    pool[j].join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        dest.setPixels(dst, 0, w, 0, 0, w, h);
+
+        layout.setBackground(new BitmapDrawable(dest));
+        System.out.println("Duration: "+ (System.currentTimeMillis()-startTime));
+//        w1.start();
+//        try {
+//            w1.join();
+//        } catch (Exception e) {
+//            Log.e("IBench", "exception", e);
+//        }
+//        layout.setBackground(new BitmapDrawable(placeholder));
     }
 
     private void startForkJoin() {
@@ -145,17 +163,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startExecutor() {
+
+        doJob();
         ExecutorService pool;
         pool = Executors.newFixedThreadPool(numThreads);
-        bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
-        Thread task = new Thread(new ExecutorBlur(this, pool));
-        task.start();
-        try {
-            task.join();
-        } catch (InterruptedException e) {
-            Log.e("IBench", "exception", e);
+        for (int j = 0; j < numThreads; j++) {
+            pool.submit(new Worker(mainActivity, src, j*pieceWidth, w*h, dst));
         }
-        layout.setBackground(new BitmapDrawable(placeholder));
+
+        pool.shutdown();
+        try {
+            pool.awaitTermination(500, TimeUnit.SECONDS);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        dest.setPixels(dst, 0, w, 0, 0, w, h);
+
+        layout.setBackground(new BitmapDrawable(dest));
+        System.out.println("Duration: " + (System.currentTimeMillis() - startTime));
     }
 
     private void startHandlerR() {

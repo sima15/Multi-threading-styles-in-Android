@@ -1,15 +1,13 @@
 package com.example.sima.imgblurexplpowerm;
 
-import android.graphics.Bitmap;
-
 /**
  * Created by daehyeok on 2016. 3. 22..
  */
 public class Worker extends Thread {
     //static public Bitmap[] bmpArray;
     Bluer bluer;
-    Worker(MainActivity mainActivity, int w, int h, int index, Bitmap orgBmp) {
-        bluer = new Bluer(mainActivity,  w,  h,  index,  orgBmp);
+    Worker(MainActivity mainActivity,int[] src, int start, int length, int[] dst) {
+        bluer = new Bluer(mainActivity,  src,  start,  length,  dst);
     }
 
 
