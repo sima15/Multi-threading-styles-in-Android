@@ -1,28 +1,24 @@
-package com.example.sima.imageblurringexecutor;
+package com.example.sima.imageblurhandlerrnew;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Sima Mehri
  */
-
-public class ImageBlur extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     int[] src, dst;
     int w, h;
     int pieceWidth;
     int numThreads = 16;
-    ExecutorService pool;
+    Worker[] pool;
     long startTime;
     Bitmap orgBitmap;
     Bitmap bitmap;
@@ -30,14 +26,15 @@ public class ImageBlur extends AppCompatActivity {
 
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_image_blur);
+        setContentView(R.layout.activity_main);
 
         startTime = System.currentTimeMillis();
 //       for (int i=0; i<800; i++)
-           doJob();
+        doJob();
     }
 
     void doJob(){
@@ -57,28 +54,32 @@ public class ImageBlur extends AppCompatActivity {
         dst = new int[w * h];
         bitmap.getPixels(src, 0, w, 0, 0, w, h);
 
-        pool = Executors.newFixedThreadPool(numThreads);
+        Handler handler;
+        pool = new Worker[numThreads];
 
         for (int j = 0; j < numThreads; j++) {
-            pool.submit(new Worker(src, j*pieceWidth, w*h, dst));
+            pool[j] = new Worker(src, j*pieceWidth, w*h, dst);
+            pool[j].start();
         }
 
-        pool.shutdown();
-        try {
-            pool.awaitTermination(500, TimeUnit.SECONDS);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        for(int j=0; j<numThreads; j++){
+                if(pool[j].isAlive()){
+                    try {
+                        pool[j].join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
         dest.setPixels(dst, 0, w, 0, 0, w, h);
 
         layout.setBackground(new BitmapDrawable(dest));
-        System.out.println("Duration: " + (System.currentTimeMillis() - startTime));
-
+        System.out.println("Duration: "+ (System.currentTimeMillis()-startTime));
     }
 
 
-    public class Worker implements  Runnable {
+    public class Worker extends  Thread {
 
         int[] mSource;
         int mStart;
@@ -119,8 +120,10 @@ public class ImageBlur extends AppCompatActivity {
                         (((int) rt) << 16) |
                         (((int) gt) << 8) |
                         (((int) bt) << 0);
-                mDestination[index] = dpixel;
-                dst[index] = dpixel;
+                if (index < mDestination.length) {
+                    mDestination[index] = dpixel;
+                    dst[index] = dpixel;
+                }
             }
         }
 
