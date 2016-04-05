@@ -13,19 +13,23 @@ import java.text.NumberFormat;
 
 public class MainActivity extends AppCompatActivity {
 
+    int n = 1000;
+    int numThread = 8;
+    Lock lock = new Lock();
+    static Approximate[] ap;
+    final NumberFormat formatter = new DecimalFormat("#.000000000");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        System.out.println("Just started");
-        final NumberFormat formatter = new DecimalFormat("#.000000000");
-        int n = 1000;
         long startTime = System.currentTimeMillis();
+        System.out.println("Just started");
         System.out.println("Start time: "+ startTime);
+
         try {
             for(int i = 0; i < 10; i++) {
-
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
                 Thread.sleep(1000);
             }
@@ -33,12 +37,8 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         System.out.println("total time: " + (System.currentTimeMillis() - startTime) + "ms");
-
     }
-    Lock lock = new Lock();
 
-    static Approximate[] ap;
-    static int nthread = Runtime.getRuntime().availableProcessors();
 
 
     private final double spectralnormGame(int n) throws InterruptedException {
@@ -51,16 +51,17 @@ public class MainActivity extends AppCompatActivity {
             u[i] = 1.0;
 
         // get available processor, then set up syn object
-        System.out.println("No. of threads: " + nthread);
+        System.out.println("No. of threads: " + numThread);
 
-        int chunk = n / nthread;
-        ap = new Approximate[nthread];
+        int chunk = n / numThread;
+        ap = new Approximate[numThread];
 
-        for (int i = 0; i < nthread; i++) {
+        for (int i = 0; i < numThread; i++) {
             int r1 = i * chunk;
-            int r2 = (i < (nthread - 1)) ? r1 + chunk : n;
+            int r2 = (i < (numThread - 1)) ? r1 + chunk : n;
 
             ap[i] = new Approximate(u, v, tmp, r1, r2);
+            ap[i].start();
         }
 
         lock.justStarted = true;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         double vBv = 0, vv = 0;
-        for (int i = 0; i < nthread; i++) {
+        for (int i = 0; i < numThread; i++) {
             try {
                 ap[i].join();
 
@@ -97,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
         return Math.sqrt(vBv / vv);
     }
 
@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class Approximate extends Thread {
+
         private double[] _u;
         private double[] _v;
         private double[] _tmp;
@@ -128,8 +129,6 @@ public class MainActivity extends AppCompatActivity {
 
             range_begin = rbegin;
             range_end = rend;
-
-            start();
         }
 
         public void run() {
@@ -172,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
                 lock.increment();
                 this.wait();
             }
-
         }
 
         /* multiply vector v by matrix A transposed */
@@ -211,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
 
         synchronized boolean increment() {
             index++;
-            if (index % nthread == 0) {
+            if (index % numThread == 0) {
                 synchronized(lock) {	//the last thread is done
                     index = 0;
                     lock.notify();
@@ -223,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         synchronized boolean checkIndex() {
-            if (index % nthread != 0) {
+            if (index % numThread != 0) {
                 return false;
             }
 

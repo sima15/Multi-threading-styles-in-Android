@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     long startTime;
-<<<<<<< HEAD
+
     int n = 16;
     int numThread = 4;
     ForkJoinPool pool;

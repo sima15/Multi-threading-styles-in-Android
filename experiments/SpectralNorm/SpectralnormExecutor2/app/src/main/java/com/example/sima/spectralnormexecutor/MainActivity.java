@@ -18,12 +18,14 @@ public class MainActivity extends AppCompatActivity {
 
     long startTime;
     int numThread = 4;
+    int n = 1000;
     ExecutorService pool;
     Lock lock = new Lock();
     int count;
-    double vBv = 0, vv = 0;
+//    double vBv = 0, vv = 0;
     Future<Double[]> future;
-    Approximate[] threads;
+    Approximate[] ap;
+    final NumberFormat formatter = new DecimalFormat("#.000000000");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +35,9 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         System.out.println("Start time: "+ startTime);
 
-        final NumberFormat formatter = new DecimalFormat("#.000000000");
-        int n = 5;
+
         try {
-            for(int i = 0; i < n; i++) {
+            for(int i = 0; i < 10; i++) {
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
                 Thread.sleep(1000);
             }
@@ -63,15 +64,15 @@ public class MainActivity extends AppCompatActivity {
         int chunk = n / numThread;
         pool = Executors.newFixedThreadPool(numThread);
 
-        threads = new Approximate[numThread];
+        ap = new Approximate[numThread];
 
         for (int i = 0; i < numThread; i++) {
 
             int r1 = i * chunk;
             int r2 = (i < (numThread - 1)) ? r1 + chunk : n;
 
-            threads[i] = new Approximate(u, v, tmp, r1, r2);
-            future =  pool.submit(threads[i]);
+            ap[i] = new Approximate(u, v, tmp, r1, r2);
+            future =  pool.submit(ap[i]);
         }
 
         lock.justStarted = true;
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //wake all threads
-                for (Approximate a : threads) {
+                for (Approximate a : ap) {
                     synchronized (a) {
                         a.notifyAll();
                     }
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 j++;
             }
         }
-
+        double vBv = 0, vv = 0;
         for (int i = 0; i < numThread; i++) {
             try {
                 vBv += future.get()[0];
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public  synchronized boolean checkDone() {
-        for (Approximate a : threads) {
+        for (Approximate a : ap) {
             if (!a.done) return false;
         }
         return true;
@@ -162,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
             increment();
             //done, let's notify to the main
             synchronized (lock) {
-                System.out.println("notify to main?");
+//                System.out.println("notify to main?");
                 lock.notify();
             }
             return vbv;
@@ -187,10 +188,9 @@ public class MainActivity extends AppCompatActivity {
             synchronized (this) {
                 increment();
                 lock.increment();
-                System.out.println(Thread.currentThread().getName() + " is waiting in MultiplyAv");
+//                System.out.println(Thread.currentThread().getName() + " is waiting in MultiplyAv");
                 this.wait();
             }
-
         }
 
         /* multiply vector v by matrix A transposed */
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             synchronized (this) {
                 increment();
                 lock.increment();
-                System.out.println(Thread.currentThread().getName() + " is waiting in MultiplyAtv");
+//                System.out.println(Thread.currentThread().getName() + " is waiting in MultiplyAtv");
                 this.wait();
             }
 

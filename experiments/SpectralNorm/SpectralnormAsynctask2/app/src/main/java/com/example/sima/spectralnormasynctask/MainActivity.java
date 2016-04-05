@@ -12,43 +12,37 @@ import java.text.NumberFormat;
 * @author Sima Mehri
 */
 
-
 public class MainActivity extends AppCompatActivity {
     long startTime;
     int numThread = 4;
+    int n = 1000;
     static Approximate[] ap;
     Lock lock = new Lock();
+    Object object = new Object();
+    final NumberFormat formatter = new DecimalFormat("#.000000000");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-            startTime = System.currentTimeMillis();
-            System.out.println("Start time: "+ startTime);
-               new Spectral().execute();
-        }
+        startTime = System.currentTimeMillis();
+        System.out.println("Start time: " + startTime);
+        System.out.println("Just started");
 
-    public class Spectral extends AsyncTask {
-
-        @Override
-        protected Object doInBackground(Object[] params) {
-            System.out.println("Just started");
-            final NumberFormat formatter = new DecimalFormat("#.000000000");
-            int n = 1000;
-            try {
-                for(int i = 0; i < 10; i++) {
-                    System.out.println("result is: " + formatter.format(spectralnormGame(n)));
-                    Thread.sleep(1000);
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        try {
+            for(int i = 0; i < 10; i++) {
+                System.out.println("result is: " + formatter.format(spectralnormGame(n)));
+                Thread.sleep(1000);
             }
-            System.out.println("total time: " + (System.currentTimeMillis() - startTime) + "ms");
-
-            return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        System.out.println("total time: " + (System.currentTimeMillis() - startTime) + "ms");
     }
+
+
+
     private final double spectralnormGame(int n) throws InterruptedException {
         // create unit vector
         double[] u = new double[n];
@@ -69,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
             int r2 = (i < (numThread - 1)) ? r1 + chunk : n;
 
             ap[i] = new Approximate(u, v, tmp, r1, r2);
+            ap[i].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         lock.justStarted = true;
@@ -93,19 +88,20 @@ public class MainActivity extends AppCompatActivity {
             }
             System.out.println("iteration: " + (i++));
         }
-
+//        Log.d("Debug", Thread.currentThread().getName() +" inside main thread");
         double vBv = 0, vv = 0;
         for (int i = 0; i < numThread; i++) {
-            try {
-                ap[i].join();
-
-                vBv += ap[i].m_vBv;
-                vv += ap[i].m_vv;
-            } catch (Exception e) {
-                e.printStackTrace();
+            synchronized (object){
+                try {
+                        while(!ap[i].finished) object.wait();
+//                    Log.d("Debug", Thread.currentThread().getName() +" finished waiting for " + ap[i]);
+                        vBv += ap[i].m_vBv;
+                        vv += ap[i].m_vv;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
-
         return Math.sqrt(vBv / vv);
     }
 
@@ -117,7 +113,9 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public class Approximate extends Thread {
+    public class Approximate extends AsyncTask {
+
+        boolean finished = false;
         private double[] _u;
         private double[] _v;
         private double[] _tmp;
@@ -137,10 +135,11 @@ public class MainActivity extends AppCompatActivity {
             range_begin = rbegin;
             range_end = rend;
 
-            start();
+//            start();
         }
 
-        public void run() {
+        @Override
+        protected Object doInBackground(Object[] params) {
             // 20 steps of the power method
             for (int i = 0; i < 20; i++) {
                 MultiplyAtAv(_u, _tmp, _v);
@@ -158,6 +157,12 @@ public class MainActivity extends AppCompatActivity {
             synchronized (lock) {
                 lock.notify();
             }
+            finished = true;
+            synchronized (object){
+                object.notify();
+            }
+//            Log.d("Debug", Thread.currentThread().getName() +" finished");
+            return  null;
         }
 
         /* return element i,j of infinite matrix A */
@@ -176,11 +181,11 @@ public class MainActivity extends AppCompatActivity {
                 Av[i] = sum;
             }
 
+//            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAv");
             synchronized (this) {
                 lock.increment();
                 this.wait();
             }
-
         }
 
         /* multiply vector v by matrix A transposed */
@@ -192,12 +197,12 @@ public class MainActivity extends AppCompatActivity {
 
                 Atv[i] = sum;
             }
+//            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAtv");
 
             synchronized (this) {
                 lock.increment();
                 this.wait();
             }
-
         }
 
         /* multiply vector v by matrix A and then by matrix A transposed */
