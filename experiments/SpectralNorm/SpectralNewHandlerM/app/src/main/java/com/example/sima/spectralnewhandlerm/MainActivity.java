@@ -1,19 +1,14 @@
-package com.example.sima.spectralnormhandlerr;
+package com.example.sima.spectralnewhandlerm;
 
-import android.app.Activity;
-import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-/**
- *
- * @author Sima Mehri
- */
-
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     Handler handler = new Handler();
     int n = 1000;
@@ -26,15 +21,14 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         long startTime = System.currentTimeMillis();
         System.out.println("Just started");
-        System.out.println("Start time: "+ startTime);
+        System.out.println("Start time: " + startTime);
 
         try {
 //            for(int i = 0; i < 10; i++) {
-                System.out.println("result is: " + formatter.format(spectralnormGame(n)));
-                Thread.sleep(1000);
+            System.out.println("result is: " + formatter.format(spectralnormGame(n)));
+            Thread.sleep(1000);
 //            }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -62,7 +56,7 @@ public class MainActivity extends Activity {
             int r1 = i * chunk;
             int r2 = (i < (numThread - 1)) ? r1 + chunk : n;
 
-            ap[i] = new Approximate(u, v, tmp, r1, r2);
+            ap[i] = new Approximate(u, v, tmp, r1, r2, handler);
             pool[i] = new Thread(ap[i]);
             pool[i].start();
         }
@@ -89,7 +83,7 @@ public class MainActivity extends Activity {
             }
             System.out.println("iteration: " + (i++));
         }
-        Log.d("Debug", Thread.currentThread().getName() +" inside main thread");
+        Log.d("Debug", Thread.currentThread().getName() + " inside main thread");
         double vBv = 0, vv = 0;
         for (int i = 0; i < numThread; i++) {
             try {
@@ -124,9 +118,10 @@ public class MainActivity extends Activity {
 
         public boolean done = false;
 
-        public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend) {
-            super();
+        public Approximate(double[] u, double[] v, double[] tmp, int rbegin, int rend, Handler han) {
+//            super();
 
+            handler = han;
             _u = u;
             _v = v;
             _tmp = tmp;
