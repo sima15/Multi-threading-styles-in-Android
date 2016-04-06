@@ -36,7 +36,7 @@ public class ImageBlur extends AppCompatActivity {
         setContentView(R.layout.activity_image_blur);
 
         startTime = System.currentTimeMillis();
-//       for (int i=0; i<800; i++)
+       for (int i=0; i<100; i++)
            doJob();
     }
 
