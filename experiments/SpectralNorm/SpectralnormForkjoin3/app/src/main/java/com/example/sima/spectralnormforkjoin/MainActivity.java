@@ -16,12 +16,13 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
     long startTime;
 
-    int n = 16;
+    int n = 1000;
     int numThread = 4;
     ForkJoinPool pool;
 
     int range = n;
     double m_vBv = 0, m_vv = 0;
+    final NumberFormat formatter = new DecimalFormat("#.000000000");
 
     double[] uArray;
     double[] vArray;
@@ -33,10 +34,10 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         System.out.println("Start time: " + startTime);
 
-        final NumberFormat formatter = new DecimalFormat("#.000000000");
+
 
         try {
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 10; i++) {
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
             }
         } catch (InterruptedException e) {
