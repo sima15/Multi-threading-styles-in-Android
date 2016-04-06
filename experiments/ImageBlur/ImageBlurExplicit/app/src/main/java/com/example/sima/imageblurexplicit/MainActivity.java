@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         startTime = System.currentTimeMillis();
-//        for(int i=0; i<800; i++)
+        for(int i=0; i<100; i++)
             doJob();
     }
 
@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("Duration: "+ (System.currentTimeMillis()-startTime));
 
     }
+
 
     public class Worker extends  Thread {
         int[] mSource;

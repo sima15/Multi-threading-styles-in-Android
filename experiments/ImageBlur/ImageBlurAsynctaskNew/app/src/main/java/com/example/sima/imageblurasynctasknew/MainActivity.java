@@ -37,12 +37,13 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         System.out.println("Start time: " + String.valueOf(startTime));
 
-//        for(int i=0; i<8; i++)
-        try {
-            doJob();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        for(int i=0; i<150; i++)
+            try {
+                doJob();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
     }
 
     void doJob() throws InterruptedException {

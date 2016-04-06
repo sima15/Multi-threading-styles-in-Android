@@ -32,7 +32,7 @@ public class ImageBlur extends AppCompatActivity {
         setContentView(R.layout.activity_image_blur);
         startTime = System.currentTimeMillis();
 
-//        for(int i=0; i<800; i++)
+        for(int i=0; i<150; i++)
             doJob();
     }
 
@@ -40,7 +40,7 @@ public class ImageBlur extends AppCompatActivity {
         System.out.println("Start time: "+ startTime);
         LinearLayout layout = (LinearLayout)findViewById(R.id.layout);
 
-        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/rose-06.jpg";
+        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()+"/redrose-2.jpg";
         orgBitmap = BitmapFactory.decodeFile(bitmapPath);
         bitmap = orgBitmap.copy(Bitmap.Config.RGB_565, true);
         dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);

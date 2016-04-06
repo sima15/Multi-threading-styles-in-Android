@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         startTime = System.currentTimeMillis();
-//       for (int i=0; i<800; i++)
+       for (int i=0; i<800; i++)
         doJob();
     }
 

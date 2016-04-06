@@ -29,8 +29,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //        for(int i=0; i<800; i++)
-        doJob();
+        startTime = System.currentTimeMillis();
+        for(int i=0; i<200; i++)
+            doJob();
     }
 
     void doJob() {
