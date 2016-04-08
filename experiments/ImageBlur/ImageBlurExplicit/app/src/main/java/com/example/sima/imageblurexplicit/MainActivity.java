@@ -31,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         startTime = System.currentTimeMillis();
-        for(int i=0; i<100; i++)
+
+       for(int i=0; i<800; i++)
             doJob();
     }
 
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                         (((int) gt) << 8) |
                         (((int) bt) << 0);
                 if (index < mDestination.length) {
-                    mDestination[index] = dpixel;
+//                    mDestination[index] = dpixel;
                     dst[index] = dpixel;
                 }
             }

@@ -18,7 +18,7 @@ public class Bluer  {
     int mLength;
     int[] mDestination;
     private int mBlurWidth = 15;
-    Handler handler;
+//    Handler handler;
 
     Bluer(MainActivity mainActivity, int[] src, int start, int length, int[] dst) {
         this.mainActivity = mainActivity;
@@ -33,7 +33,7 @@ public class Bluer  {
         mStart = start;
         mLength = length;
         mDestination = dst;
-        handler = han;
+//        handler = han;
     }
 
 
@@ -60,7 +60,7 @@ public class Bluer  {
                     (((int) gt) << 8) |
                     (((int) bt) << 0);
             if (index < mDestination.length) {
-                mDestination[index] = dpixel;
+//                mDestination[index] = dpixel;
                 mainActivity.dst[index] = dpixel;
             }
         }

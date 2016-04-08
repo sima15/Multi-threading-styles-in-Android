@@ -1,7 +1,7 @@
 package com.example.sima.imgblurexplpowerm;
 
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
-import android.os.Handler;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +33,7 @@ public class JobHandler extends Thread {
             case EXPLICIT: {
                 Explicit[] pool = new Explicit[mainActivity.numThreads];
 
-
+//                Log.d("Debug","Pool created");
                 for (int i = 0; i < mainActivity.numThreads; i++) {
                     pool[i] = new Explicit(mainActivity, mainActivity.src, i * mainActivity.pieceWidth,
                             mainActivity.w * mainActivity.h, mainActivity.dst);
@@ -43,6 +43,7 @@ public class JobHandler extends Thread {
                 for (int j = 0; j < mainActivity.numThreads; j++) {
                     if (pool[j].isAlive()) {
                         try {
+//                            Log.d("Debug", "waiting for "+ pool[j]);
                             pool[j].join();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -50,7 +51,9 @@ public class JobHandler extends Thread {
                     }
 
                 }
+                pool = null;
             }
+            System.gc();
             break;
             case EXECUTOR: {
                 ExecutorService pool;
@@ -66,7 +69,11 @@ public class JobHandler extends Thread {
                 }catch(Exception e){
                     e.printStackTrace();
                 }
+                pool = null;
             }
+            System.gc();
+                break;
+
             case FORKJOIN: {
                 ForkBlur fb = new ForkBlur(mainActivity, mainActivity.src, 0,
                         mainActivity.w * mainActivity.h, mainActivity.dst);
@@ -79,7 +86,11 @@ public class JobHandler extends Thread {
                     e.printStackTrace();
                 }
             }
+            System.gc();
+            break;
+
             case ASYNCTASK: {
+//                ExecutorService executor = new ThreadPoolExecutor(mainActivity.numThreads, 64, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(64));
                 AsyncTaskBlur[] pool = new AsyncTaskBlur[mainActivity.numThreads];
                 for (int j = 0; j < mainActivity.numThreads; j++) {
                     pool[j] = new AsyncTaskBlur(mainActivity, mainActivity.src, j * mainActivity.pieceWidth,
@@ -87,6 +98,7 @@ public class JobHandler extends Thread {
                     pool[j].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
 
+                System.gc();
 
                 for(int j=0; j<mainActivity.numThreads; j++) {
                     try {
@@ -97,9 +109,13 @@ public class JobHandler extends Thread {
                         e.printStackTrace();
                     }
                 }
+                pool = null;
             }
+            System.gc();
+                break;
+
             case HANDLERR: {
-                Handler handler;
+//                Handler handler;
                 Thread[] pool = new Thread[mainActivity.numThreads];
 
                 for (int j = 0; j < mainActivity.numThreads; j++) {
@@ -108,6 +124,7 @@ public class JobHandler extends Thread {
                     pool[j].start();
                 }
 
+                System.gc();
                 for(int j=0; j<mainActivity.numThreads; j++){
                     if(pool[j].isAlive()){
                         try {
@@ -117,14 +134,18 @@ public class JobHandler extends Thread {
                         }
                     }
                 }
+                pool = null;
             }
+            System.gc();
+                break;
+
             case  HANDLERM:{
-                Handler handler = new Handler();
+//                handler = new Handler();
                 Thread[] pool = new Thread[mainActivity.numThreads];
 
                 for(int i=0; i<mainActivity.numThreads; i++){
                     pool[i] =  new Thread(new HandlerM(mainActivity, mainActivity.src, i * mainActivity.pieceWidth,
-                            mainActivity.w * mainActivity.h, mainActivity.dst, handler));
+                            mainActivity.w * mainActivity.h, mainActivity.dst, mainActivity.handler));
                     pool[i].start();
                 }
 
@@ -137,14 +158,22 @@ public class JobHandler extends Thread {
                         }
                     }
                 }
+                pool = null;
             }
+            System.gc();
+                break;
 
         }
 
         mainActivity.dest.setPixels(mainActivity.dst, 0, mainActivity.w, 0, 0, mainActivity.w, mainActivity.h);
-
-//        mainActivity.layout.setBackground(new BitmapDrawable(mainActivity.dest));
+        (mainActivity.layout).setBackground(new BitmapDrawable(mainActivity.dest));
         System.out.println("Duration: " + (System.currentTimeMillis() - mainActivity.startTime));
+
+        mainActivity.bitmap.recycle();
+        mainActivity.dest.recycle();
+
+        mainActivity.src = null;
+        mainActivity.dst = null;
 
     }
 }
