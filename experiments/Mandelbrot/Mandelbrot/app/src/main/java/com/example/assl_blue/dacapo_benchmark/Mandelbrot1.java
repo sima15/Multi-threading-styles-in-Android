@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Mandelbrot1 extends AppCompatActivity {
@@ -16,7 +17,6 @@ public class Mandelbrot1 extends AppCompatActivity {
     EditText inputText;
     Thread[] pool;
 
-    boolean mainThread = true;
     boolean[] threads;
 
     byte[][] out;
@@ -33,14 +33,11 @@ public class Mandelbrot1 extends AppCompatActivity {
             System.out.println("Start time is: " + startTime);
             inputText = (EditText) findViewById(R.id.inputText);
 
-            for(int i=0; i<800; i++) doJob();
+            for(int i=0; i<1; i++) doJob();
 
-            if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
-
-            if(mainThread) totalTime = endTime - startTime;
-            System.out.println("end time is: "+endTime);
-            System.out.println("Total time is: "+totalTime);
-            inputText.setText(String.valueOf(totalTime));
+        totalTime = System.currentTimeMillis() - startTime;
+        inputText.setText(String.valueOf(totalTime));
+        System.out.println("Total time is: " + totalTime);
     }
 
 
@@ -55,7 +52,7 @@ public class Mandelbrot1 extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        poolLength = 32;
+        poolLength = 1;
         threads = new boolean[poolLength];
             pool = new Thread[poolLength];
             for (int i = 0; i < pool.length; i++) {
@@ -67,7 +64,7 @@ public class Mandelbrot1 extends AppCompatActivity {
                             putLine(y, out[y]);
                         }
                         threads[temp] = true;
-                        if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
+//                        if(System.currentTimeMillis()>endTime) endTime= System.currentTimeMillis();
                         synchronized (this) {
                             notify();
                         }
@@ -88,8 +85,8 @@ public class Mandelbrot1 extends AppCompatActivity {
             }
         }
 
-//        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-//        for(int i=0;i<N;i++) System.out.println(out[i]);
+        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+        for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
 
     }
 

@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
 
@@ -18,10 +17,11 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
-    int[] src, dst;
+    int[] src;
+    static int[] dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 32;
+    int numThreads = 8;
     Worker[] pool;
     long startTime;
 
@@ -37,26 +37,28 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         System.out.println("Start time: " + String.valueOf(startTime));
 
-        for(int i=0; i<150; i++)
-            try {
-                doJob();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
+        for(int i=0; i<50; i++)
+        try {
+            doJob();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     void doJob() throws InterruptedException {
         layout = (LinearLayout) findViewById(R.id.layout);
 
-        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
-        orgBitmap = BitmapFactory.decodeFile(bitmapPath);
+//        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose.jpg";
+//        orgBitmap = BitmapFactory.decodeFile(bitmapPath);
+        orgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.redrose);
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
 
         w = bitmap.getWidth();
         h = bitmap.getHeight();
-        pieceWidth = w/numThreads;
+        pieceWidth = w*h/numThreads;
 
         src = new int[w * h];
         dst = new int[w * h];
@@ -64,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         pool = new Worker[numThreads];
         for (int j = 0; j < numThreads; j++) {
-            pool[j] = new Worker(src, j * pieceWidth, w * h, dst);
+            pool[j] = new Worker(src, j * pieceWidth, pieceWidth, dst);
             pool[j].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
@@ -81,11 +83,14 @@ public class MainActivity extends AppCompatActivity {
 
         dest.setPixels(dst, 0, w, 0, 0, w, h);
 
+        for(int i=0; i<numThreads; i++){
+            pool[i] = null;
+        }
         layout.setBackground(new BitmapDrawable(dest));
         System.out.println("Duration: "+ (System.currentTimeMillis()-startTime));
     }
 
-    class Worker extends AsyncTask<Void, Void, Void> {
+    static  class Worker extends AsyncTask<Void, Void, Void> {
         int[] mSource;
         int mStart;
         int mLength;

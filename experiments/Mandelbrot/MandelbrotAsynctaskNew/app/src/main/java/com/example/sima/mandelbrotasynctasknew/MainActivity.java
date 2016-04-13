@@ -1,11 +1,11 @@
 package com.example.sima.mandelbrotasynctasknew;
 
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     long totalTime;
     int N =500;
     TextView resultText;
-    int numThreads = 16;
+    int numThreads = 8;
     MandelAsyncTask[] tasks;
     Object object = new Object();
 
@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.nanoTime();
         System.out.println("start time is: " + startTime);
 
-        for(int i=0; i<80; i++)
+        for(int i=0; i<1; i++)
            doJob();
 
         String result = doJob();
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         tasks = new MandelAsyncTask[numThreads];
         for(int i=0; i<numThreads; i++){
             tasks[i] = new MandelAsyncTask(i*chunk, (i+1)*chunk);
-            tasks[i].execute();
+            tasks[i].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         for (int k=0; k<numThreads; k++) {
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         }
         @Override
         protected String doInBackground(Integer... params) {
-            Log.d("Log", Thread.currentThread().getName() + " executing");
+//            Log.d("Log", Thread.currentThread().getName() + " executing");
             int y;
             yCt.set(lb);
             while ((y = yCt.getAndIncrement()) < ub) {
@@ -92,12 +92,12 @@ public class MainActivity extends AppCompatActivity {
             }
             done = true;
 
-//            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-//            for(int i=0;i<N;i++) System.out.println(out[i]);
+            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+            for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
 //
             synchronized (object) {
                 object.notify();
-                Log.d("Log", Thread.currentThread().getName() + "Notified");
+//                Log.d("Log", Thread.currentThread().getName() + "Notified");
             }
 
             endTime= System.nanoTime();

@@ -36,7 +36,7 @@ public class JobHandler extends Thread {
 //                Log.d("Debug","Pool created");
                 for (int i = 0; i < mainActivity.numThreads; i++) {
                     pool[i] = new Explicit(mainActivity, mainActivity.src, i * mainActivity.pieceWidth,
-                            mainActivity.w * mainActivity.h, mainActivity.dst);
+                            mainActivity.pieceWidth, mainActivity.dst);
                     pool[i].start();
                 }
 
@@ -60,7 +60,7 @@ public class JobHandler extends Thread {
                 pool = Executors.newFixedThreadPool(mainActivity.numThreads);
                 for (int j = 0; j < mainActivity.numThreads; j++) {
                     pool.submit(new ExecutorBlur(mainActivity, mainActivity.src, j*mainActivity.pieceWidth,
-                            mainActivity.w*mainActivity.h, mainActivity.dst));
+                            mainActivity.pieceWidth, mainActivity.dst));
                 }
 
                 pool.shutdown();
@@ -94,7 +94,7 @@ public class JobHandler extends Thread {
                 AsyncTaskBlur[] pool = new AsyncTaskBlur[mainActivity.numThreads];
                 for (int j = 0; j < mainActivity.numThreads; j++) {
                     pool[j] = new AsyncTaskBlur(mainActivity, mainActivity.src, j * mainActivity.pieceWidth,
-                            mainActivity.w * mainActivity.h, mainActivity.dst);
+                            mainActivity.pieceWidth, mainActivity.dst);
                     pool[j].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
 
@@ -120,7 +120,7 @@ public class JobHandler extends Thread {
 
                 for (int j = 0; j < mainActivity.numThreads; j++) {
                     pool[j] = new Thread(new HandlerR(mainActivity, mainActivity.src, j * mainActivity.pieceWidth,
-                            mainActivity.w * mainActivity.h, mainActivity.dst));
+                            mainActivity.pieceWidth, mainActivity.dst));
                     pool[j].start();
                 }
 
@@ -145,7 +145,7 @@ public class JobHandler extends Thread {
 
                 for(int i=0; i<mainActivity.numThreads; i++){
                     pool[i] =  new Thread(new HandlerM(mainActivity, mainActivity.src, i * mainActivity.pieceWidth,
-                            mainActivity.w * mainActivity.h, mainActivity.dst, mainActivity.handler));
+                            mainActivity.pieceWidth, mainActivity.dst, mainActivity.handler));
                     pool[i].start();
                 }
 
@@ -169,8 +169,8 @@ public class JobHandler extends Thread {
         (mainActivity.layout).setBackground(new BitmapDrawable(mainActivity.dest));
         System.out.println("Duration: " + (System.currentTimeMillis() - mainActivity.startTime));
 
-        mainActivity.bitmap.recycle();
-        mainActivity.dest.recycle();
+//        mainActivity.bitmap.recycle();
+//        mainActivity.dest.recycle();
 
         mainActivity.src = null;
         mainActivity.dst = null;

@@ -26,9 +26,11 @@ public class MainActivity extends AppCompatActivity {
     static Handler handler;
 
     public enum Style {
-        Explict, Executor, ForkJoin, AsyncTask,  HandlerR, HandlerM
+        Explict, Executor, ForkJoin,  HandlerR, HandlerM, AsyncTask
     }
-
+//    public enum Style {
+//        Asynctask
+//    }
     Style style;
 
 
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         w = bitmap.getWidth();
         h = bitmap.getHeight();
-        pieceWidth = w/numThreads;
+        pieceWidth = w*h/numThreads;
 
         src = new int[w * h];
         dst = new int[w * h];
@@ -195,5 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 startHandlerM();
                 break;
         }
+
+//        startAsyncTask();
     }
 }
