@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         w = bitmap.getWidth();
         h = bitmap.getHeight();
-        int pieceWidth = w/numThreads;
+        int pieceWidth = w*h/numThreads;
 
         src = new int[w * h];
         dst = new int[w * h];
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         pool = new Worker[numThreads];
 
         for(int i=0; i<numThreads; i++){
-            pool[i] = new Worker(src, i*pieceWidth, w * h, dst, handler);
+            pool[i] = new Worker(src, i*pieceWidth, pieceWidth, dst, handler);
             pool[i].start();
         }
 

@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     long startTime;
     double duration;
     int N = 500;
-    int numThreads = 4;
+    int numThreads = 32;
     byte[][] out;
     static AtomicInteger yCt;
     static double[] Crb;
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         startTime = System.nanoTime();
         System.out.println("Start time is: " + startTime);
 
-        for (int i = 0; i < 800; i++)
+        for (int i = 0; i < 300; i++)
             doJob();
     }
 

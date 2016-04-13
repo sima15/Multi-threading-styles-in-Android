@@ -23,4 +23,12 @@ class AsyncTaskBlur extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
+    @Override
+    protected  void onPostExecute(Void v){
+        if(AsyncTaskBlur.this.getStatus()==Status.FINISHED){
+            AsyncTaskBlur.this.cancel(true);
+            mainActivity = null;
+        }
+    }
+
 }

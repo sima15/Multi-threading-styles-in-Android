@@ -4,13 +4,10 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.EditText;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Mandelbrot1 extends AppCompatActivity {
 
-    int repeatNum = 50;
+    int repeatNum = 100;
 
     public enum Style {
         Explict, ForkJoin, AsyncTask, Executor, HandlerR, HandlerM

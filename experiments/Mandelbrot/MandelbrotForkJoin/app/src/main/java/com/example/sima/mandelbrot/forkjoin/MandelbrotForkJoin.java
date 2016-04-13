@@ -28,15 +28,15 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mandelbrot_fork_join);
 
-                startTime = System.currentTimeMillis();
-                System.out.println("Start time is: " + startTime);
-                inputText = (EditText) findViewById(R.id.inputText);
+        startTime = System.currentTimeMillis();
+        System.out.println("Start time is: " + startTime);
+        inputText = (EditText) findViewById(R.id.inputText);
 
 
-                for(int i=0; i<80; i++)
-                    doJob();
+        for(int i=0; i<300; i++)
+            doJob();
 
-                inputText.setText(String.valueOf(totalTime));
+        inputText.setText(String.valueOf(totalTime));
     }
 
 
@@ -51,7 +51,7 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        int poolLength = 8;
+        int poolLength = 128;
 
         MandelbrotTask task = new MandelbrotTask(0, out.length);
 
@@ -64,8 +64,9 @@ public class MandelbrotForkJoin extends AppCompatActivity {
             forkJoinPool.awaitTermination(1, TimeUnit.DAYS);
             if (forkJoinPool.isTerminated()) {
 
-                System.out.println(("P4\n" + N + " " + N + "\n").getBytes());
-                for(int i=0;i<N;i++) System.out.println(out[i]);
+//                System.out.println(("P4\n" + N + " " + N + "\n").getBytes());
+//                for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
+
                 long endTime = System.currentTimeMillis();
                 totalTime = endTime - startTime;
                 System.out.println("end time is: " + endTime);

@@ -21,7 +21,7 @@ public class ImageBlur extends AppCompatActivity {
     int[] src, dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 16;
+    int numThreads = 2;
     ExecutorService pool;
     long startTime;
     Bitmap orgBitmap;
@@ -38,11 +38,14 @@ public class ImageBlur extends AppCompatActivity {
         startTime = System.currentTimeMillis();
        for (int i=0; i<100; i++)
            doJob();
+
     }
 
     void doJob(){
         System.out.println("Start time: " + String.valueOf(startTime));
         LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+
+
 
         String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
         orgBitmap = BitmapFactory.decodeFile(bitmapPath);
@@ -51,7 +54,7 @@ public class ImageBlur extends AppCompatActivity {
 
         w = bitmap.getWidth();
         h = bitmap.getHeight();
-        pieceWidth = w/numThreads;
+        pieceWidth = w*h/numThreads;
 
         src = new int[w * h];
         dst = new int[w * h];
@@ -61,7 +64,7 @@ public class ImageBlur extends AppCompatActivity {
         pool = Executors.newFixedThreadPool(numThreads);
 
         for (int j = 0; j < numThreads; j++) {
-            pool.submit(new Worker(src, j*pieceWidth, w*h, dst));
+            pool.submit(new Worker(src, j*pieceWidth , pieceWidth, dst));
         }
 
         pool.shutdown();

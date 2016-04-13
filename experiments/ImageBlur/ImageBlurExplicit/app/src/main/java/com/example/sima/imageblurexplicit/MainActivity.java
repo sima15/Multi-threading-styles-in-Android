@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     int[] src, dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 16;
+    int numThreads = 512;
     Worker[] pool;
     long startTime;
     Bitmap orgBitmap;
@@ -31,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         startTime = System.currentTimeMillis();
-        for(int i=0; i<100; i++)
+
+
+       for(int i=0; i<50; i++)
             doJob();
     }
 
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         w = bitmap.getWidth();
         h = bitmap.getHeight();
-        pieceWidth = w/numThreads;
+        pieceWidth = w*h/numThreads;
 
         src = new int[w * h];
         dst = new int[w * h];
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         pool = new Worker[numThreads];
 
         for(int i=0; i<numThreads; i++){
-            pool[i] = new Worker(src, i*pieceWidth, w*h, dst);
+            pool[i] = new Worker(src, i*pieceWidth, pieceWidth, dst);
             pool[i].start();
         }
 
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                         (((int) gt) << 8) |
                         (((int) bt) << 0);
                 if (index < mDestination.length) {
-                    mDestination[index] = dpixel;
+//                    mDestination[index] = dpixel;
                     dst[index] = dpixel;
                 }
             }
