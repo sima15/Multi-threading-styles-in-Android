@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
 
@@ -21,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     static int[] dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 8;
+    int numThreads = 128;
     Worker[] pool;
     long startTime;
 
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("Start time: " + String.valueOf(startTime));
 
 
-        for(int i=0; i<50; i++)
+        for(int i=0; i<25; i++)
         try {
             doJob();
 
@@ -50,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
     void doJob() throws InterruptedException {
         layout = (LinearLayout) findViewById(R.id.layout);
 
-//        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose.jpg";
-//        orgBitmap = BitmapFactory.decodeFile(bitmapPath);
-        orgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.redrose);
+        String bitmapPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/redrose-2.jpg";
+        orgBitmap = BitmapFactory.decodeFile(bitmapPath);
+//        orgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.redrose);
         bitmap = orgBitmap.copy(orgBitmap.getConfig(), true);
         dest = orgBitmap.copy(Bitmap.Config.RGB_565, true);
 

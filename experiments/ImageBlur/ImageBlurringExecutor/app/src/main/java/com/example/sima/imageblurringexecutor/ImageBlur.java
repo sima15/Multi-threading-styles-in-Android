@@ -21,7 +21,7 @@ public class ImageBlur extends AppCompatActivity {
     int[] src, dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 2;
+    int numThreads = 128;
     ExecutorService pool;
     long startTime;
     Bitmap orgBitmap;
@@ -36,7 +36,7 @@ public class ImageBlur extends AppCompatActivity {
         setContentView(R.layout.activity_image_blur);
 
         startTime = System.currentTimeMillis();
-       for (int i=0; i<100; i++)
+       for (int i=0; i<50; i++)
            doJob();
 
     }

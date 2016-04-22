@@ -52,7 +52,7 @@ public class Mandelbrot1 extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        poolLength = 1;
+        poolLength = 16;
         threads = new boolean[poolLength];
             pool = new Thread[poolLength];
             for (int i = 0; i < pool.length; i++) {

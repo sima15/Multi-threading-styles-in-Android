@@ -14,7 +14,7 @@ import java.text.NumberFormat;
 
 public class MainActivity extends AppCompatActivity {
     long startTime;
-    int numThread = 4;
+    int numThread = 2;
     int n = 1000;
     static Approximate[] ap;
     Lock lock = new Lock();

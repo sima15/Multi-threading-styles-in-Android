@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     int[] src, dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 512;
+    int numThreads = 128;
     Worker[] pool;
     long startTime;
     Bitmap orgBitmap;
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
 
        for(int i=0; i<50; i++)
-            doJob();
+           doJob();
     }
 
     void doJob(){

@@ -54,7 +54,7 @@ public class MandelbrotExecutor extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        int poolLength = 128;
+        int poolLength = 1;
         ExecutorService executor;
 
             executor = Executors.newFixedThreadPool(poolLength);

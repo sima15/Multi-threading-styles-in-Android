@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     long startTime;
 
     int n = 1000;
-    int numThread = 4;
+    int numThread = 1;
     ForkJoinPool pool;
 
     int range = n;

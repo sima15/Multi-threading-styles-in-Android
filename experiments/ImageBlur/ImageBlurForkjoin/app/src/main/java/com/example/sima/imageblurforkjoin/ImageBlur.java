@@ -21,7 +21,7 @@ public class ImageBlur extends AppCompatActivity {
     int[] src, dst;
     int w , h;
     long startTime;
-    int numThreads =1024;
+    int numThreads =128;
     Bitmap bitmap;
     Bitmap orgBitmap;
     Bitmap dest;

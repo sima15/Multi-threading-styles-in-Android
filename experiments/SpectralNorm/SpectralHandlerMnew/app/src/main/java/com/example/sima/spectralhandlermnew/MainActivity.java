@@ -7,12 +7,17 @@ import android.support.v7.app.AppCompatActivity;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+/**
+ *
+ * @author Sima Mehri
+ */
+
 public class MainActivity extends AppCompatActivity {
 
 
         Handler handler = new Handler();
         int n = 1000;
-        int numThread = 1;
+        int numThread = 128;
         static Approximate[] ap;
         Lock lock = new Lock();
         final NumberFormat formatter = new DecimalFormat("#.000000000");
@@ -26,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("Start time: " + startTime);
 
             try {
-            for(int i = 0; i < 300; i++) {
+            for(int i = 0; i < 10; i++) {
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
                 Thread.sleep(1000);
             }
