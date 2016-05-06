@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Increment</string>
+    <string name="resultView">Result</string>
+</resources>

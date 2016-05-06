@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">IncrementForkjoin</string>
+    <string name="resultView">Result</string>
+</resources>

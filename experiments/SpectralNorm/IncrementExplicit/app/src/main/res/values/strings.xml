@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">IncrementExplicit</string>
+    <string name="resultText">Result</string>
+</resources>

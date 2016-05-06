@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     int[] src, dst;
     int w, h;
     long startTime;
-    int numThreads = 8;
+    int numThreads = 128;
     Worker[] pool;
     Bitmap bitmap;
     Bitmap orgBitmap;
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startTime = System.currentTimeMillis();
-        for(int i=0; i<200; i++)
+        for(int i=0; i<50; i++)
             doJob();
     }
 

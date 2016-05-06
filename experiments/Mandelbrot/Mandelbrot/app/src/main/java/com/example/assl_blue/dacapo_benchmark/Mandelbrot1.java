@@ -4,14 +4,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Mandelbrot1 extends AppCompatActivity {
 
     int N = 500;
     long startTime;
-    long endTime = startTime;
     long totalTime;
     int poolLength;
     EditText inputText;
@@ -33,7 +31,7 @@ public class Mandelbrot1 extends AppCompatActivity {
             System.out.println("Start time is: " + startTime);
             inputText = (EditText) findViewById(R.id.inputText);
 
-            for(int i=0; i<1; i++) doJob();
+            for(int i=0; i<300; i++) doJob();
 
         totalTime = System.currentTimeMillis() - startTime;
         inputText.setText(String.valueOf(totalTime));
@@ -85,8 +83,8 @@ public class Mandelbrot1 extends AppCompatActivity {
             }
         }
 
-        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-        for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
+//        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+//        for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
 
     }
 
