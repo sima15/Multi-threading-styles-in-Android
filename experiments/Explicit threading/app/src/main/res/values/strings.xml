@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">Mandelbrot</string>
-    <string name="inputText">Enter a number.</string>
-    <string name="submitButton">Submit</string>
-</resources>
