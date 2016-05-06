@@ -3,7 +3,6 @@ package com.example.sima.spectralnormhandlerr;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -17,7 +16,7 @@ public class MainActivity extends Activity {
 
     Handler handler = new Handler();
     int n = 1000;
-    int numThread = 4;
+    int numThread = 8;
     static Approximate[] ap;
     Lock lock = new Lock();
     final NumberFormat formatter = new DecimalFormat("#.000000000");
@@ -32,10 +31,10 @@ public class MainActivity extends Activity {
         System.out.println("Start time: "+ startTime);
 
         try {
-//            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 10; i++) {
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
                 Thread.sleep(1000);
-//            }
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -89,13 +88,13 @@ public class MainActivity extends Activity {
             }
             System.out.println("iteration: " + (i++));
         }
-        Log.d("Debug", Thread.currentThread().getName() +" inside main thread");
+//        Log.d("Debug", Thread.currentThread().getName() +" inside main thread");
         double vBv = 0, vv = 0;
         for (int i = 0; i < numThread; i++) {
             try {
 //                ap[i].join();
                 pool[i].join();
-                Log.d("Debug", Thread.currentThread().getName() +" finished waiting for " + ap[i]);
+//                Log.d("Debug", Thread.currentThread().getName() +" finished waiting for " + ap[i]);
                 vBv += ap[i].m_vBv;
                 vv += ap[i].m_vv;
             } catch (Exception e) {
@@ -172,7 +171,7 @@ public class MainActivity extends Activity {
 
                 Av[i] = sum;
             }
-            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAv");
+//            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAv");
             synchronized (this) {
                 lock.increment();
                 this.wait();
@@ -190,7 +189,7 @@ public class MainActivity extends Activity {
                 Atv[i] = sum;
             }
 
-            Log.d("Debug", Thread.currentThread().getName() + " finished MultiplyAtv");
+//            Log.d("Debug", Thread.currentThread().getName() + " finished MultiplyAtv");
             synchronized (this) {
                 lock.increment();
                 this.wait();

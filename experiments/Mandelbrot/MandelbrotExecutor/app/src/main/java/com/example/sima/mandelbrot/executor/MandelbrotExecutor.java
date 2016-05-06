@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +36,7 @@ public class MandelbrotExecutor extends AppCompatActivity {
         inputText = (EditText)findViewById(R.id.inputText);
 
         //To increase the running time of the application
-        for (int i=0; i<1; i++) doJob();
+        for (int i=0; i<300; i++) doJob();
 
         totalTime = System.currentTimeMillis() - startTime;
         inputText.setText(String.valueOf(totalTime));
@@ -55,7 +54,7 @@ public class MandelbrotExecutor extends AppCompatActivity {
         yCt = new AtomicInteger();
         out = new byte[N][(N + 7) / 8];
 
-        int poolLength = 8;
+        int poolLength = 1;
         ExecutorService executor;
 
             executor = Executors.newFixedThreadPool(poolLength);
@@ -69,8 +68,8 @@ public class MandelbrotExecutor extends AppCompatActivity {
                             putLine(y, out[y]);
                         }
 
-                        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-                        for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
+//                        System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+//                        for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
                     }
                 });
             }

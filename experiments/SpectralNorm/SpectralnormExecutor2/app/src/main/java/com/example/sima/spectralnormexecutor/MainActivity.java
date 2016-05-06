@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
 public class MainActivity extends AppCompatActivity {
 
     long startTime;
-    int numThread = 4;
+    int numThread = 128;
     int n = 1000;
     ExecutorService pool;
     Lock lock = new Lock();

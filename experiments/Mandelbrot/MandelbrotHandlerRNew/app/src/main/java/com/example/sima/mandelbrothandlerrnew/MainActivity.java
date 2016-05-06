@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     long startTime;
     double duration;
     int N = 500;
-    int numThreads = 32;
+    int numThreads = 128;
     byte[][] out;
     static AtomicInteger yCt;
     static double[] Crb;
@@ -36,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < 300; i++)
             doJob();
+
+        duration = (System.nanoTime() - startTime) / 1000000.00;
+        System.out.println("Duration: " + duration);
+        resultText.setText(String.valueOf(duration));
     }
 
     protected void doJob() {
@@ -66,9 +70,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        duration = (System.nanoTime() - startTime) / 1000000.00;
-        System.out.println("Duration: " + duration);
-        resultText.setText(String.valueOf(duration));
+
     }
 
     static int getByte(int x, int y) {

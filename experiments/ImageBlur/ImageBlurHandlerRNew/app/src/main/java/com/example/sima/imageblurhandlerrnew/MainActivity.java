@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     int[] src, dst;
     int w, h;
     int pieceWidth;
-    int numThreads = 16;
+    int numThreads = 8;
     Worker[] pool;
     long startTime;
     Bitmap orgBitmap;

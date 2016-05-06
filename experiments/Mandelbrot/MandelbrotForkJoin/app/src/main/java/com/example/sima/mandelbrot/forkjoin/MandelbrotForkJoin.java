@@ -36,7 +36,10 @@ public class MandelbrotForkJoin extends AppCompatActivity {
         for(int i=0; i<300; i++)
             doJob();
 
+        long endTime = System.currentTimeMillis();
+        totalTime = endTime - startTime;
         inputText.setText(String.valueOf(totalTime));
+        System.out.println("Total time is: " + totalTime);
     }
 
 
@@ -67,10 +70,7 @@ public class MandelbrotForkJoin extends AppCompatActivity {
 //                System.out.println(("P4\n" + N + " " + N + "\n").getBytes());
 //                for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
 
-                long endTime = System.currentTimeMillis();
-                totalTime = endTime - startTime;
-                System.out.println("end time is: " + endTime);
-                System.out.println("Total time is: " + totalTime);
+
 
             }
         } catch (InterruptedException e) {

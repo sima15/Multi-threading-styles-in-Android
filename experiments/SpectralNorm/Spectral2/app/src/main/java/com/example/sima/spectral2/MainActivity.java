@@ -14,7 +14,7 @@ import java.text.NumberFormat;
 public class MainActivity extends AppCompatActivity {
 
     int n = 1000;
-    int numThread = 8;
+    int numThread = 128;
     Lock lock = new Lock();
     static Approximate[] ap;
     final NumberFormat formatter = new DecimalFormat("#.000000000");

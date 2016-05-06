@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+/**
+ *
+ * @author Sima Mehri
+ */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,17 +32,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         resultText = (TextView) findViewById(R.id.resultText);
-        startTime = System.nanoTime();
+
+        startTime = System.currentTimeMillis();
         System.out.println("start time is: " + startTime);
 
-        for(int i=0; i<1; i++)
+        for(int i=0; i<300; i++)
            doJob();
 
-        String result = doJob();
-        resultText.setText(result);
+        endTime = System.currentTimeMillis();
+        totalTime = endTime - startTime;
+        System.out.println("Total time is: " + totalTime);
+        resultText.setText(String.valueOf(totalTime));
     }
 
-    protected  String doJob(){
+    protected  void  doJob(){
         Crb = new double[N + 7];
         Cib = new double[N + 7];
         double invN = 2.0 / N;
@@ -66,10 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        totalTime = (System.nanoTime() - startTime)/1000000;
-        System.out.println("end time is: "+ System.nanoTime());
-        System.out.println("Total time is: " + totalTime);
-        return String.valueOf(totalTime);
+
     }
 
     class MandelAsyncTask extends AsyncTask<Integer, Void, String> {
@@ -92,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
             }
             done = true;
 
-            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
-            for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
+//            System.out.print(("P4\n" + N + " " + N + "\n").getBytes());
+//            for(int i=0;i<N;i++) System.out.println(Arrays.toString(out[i]));
 //
             synchronized (object) {
                 object.notify();

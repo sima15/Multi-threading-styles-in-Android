@@ -3,6 +3,7 @@ package com.example.sima.spectralnormasynctask;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -14,7 +15,7 @@ import java.text.NumberFormat;
 
 public class MainActivity extends AppCompatActivity {
     long startTime;
-    int numThread = 4;
+    int numThread = 8;
     int n = 1000;
     static Approximate[] ap;
     Lock lock = new Lock();
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("Just started");
 
         try {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 1; i++) {
                 System.out.println("result is: " + formatter.format(spectralnormGame(n)));
                 Thread.sleep(1000);
             }
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
             ap[i] = new Approximate(u, v, tmp, r1, r2);
             ap[i].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//            ap[i].execute();
         }
 
         lock.justStarted = true;
@@ -88,13 +90,13 @@ public class MainActivity extends AppCompatActivity {
             }
             System.out.println("iteration: " + (i++));
         }
-//        Log.d("Debug", Thread.currentThread().getName() +" inside main thread");
+        Log.d("Debug", Thread.currentThread().getName() +" inside main thread");
         double vBv = 0, vv = 0;
         for (int i = 0; i < numThread; i++) {
             synchronized (object){
                 try {
                         while(!ap[i].finished) object.wait();
-//                    Log.d("Debug", Thread.currentThread().getName() +" finished waiting for " + ap[i]);
+                    Log.d("Debug", Thread.currentThread().getName() + " finished waiting for " + ap[i]);
                         vBv += ap[i].m_vBv;
                         vv += ap[i].m_vv;
                 } catch (Exception e) {
@@ -134,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
 
             range_begin = rbegin;
             range_end = rend;
-
-//            start();
         }
 
         @Override
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             synchronized (object){
                 object.notify();
             }
-//            Log.d("Debug", Thread.currentThread().getName() +" finished");
+            Log.d("Debug", Thread.currentThread().getName() +" finished");
             return  null;
         }
 
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                 Av[i] = sum;
             }
 
-//            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAv");
+            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAv");
             synchronized (this) {
                 lock.increment();
                 this.wait();
@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Atv[i] = sum;
             }
-//            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAtv");
+            Log.d("Debug", Thread.currentThread().getName() +" finished MultiplyAtv");
 
             synchronized (this) {
                 lock.increment();
